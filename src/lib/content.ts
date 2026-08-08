@@ -16,7 +16,20 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { SEED_SITE } from "@/content/seed";
 import type { SiteContent, SitePost } from "./site";
 
+/**
+ * A service binding, structurally.
+ *
+ * Declared here rather than imported: the project has no dependency on
+ * @cloudflare/workers-types, and the generated cloudflare-env.d.ts is
+ * git-ignored, so it is not there when CI typechecks.
+ */
+export interface ServiceBinding {
+  fetch: (input: string, init?: RequestInit) => Promise<Response>;
+}
+
 interface CmsEnv {
+  /** Service binding to the venus-backend worker. Absent under `next dev`. */
+  CMS?: ServiceBinding;
   CMS_API_URL?: string;
   CMS_SITE_KEY?: string;
   /** Milliseconds a snapshot may be reused within one worker isolate. 0 = never. */
@@ -33,7 +46,9 @@ function cmsEnv(): CmsEnv {
     /* Not running on Workers — `next dev` falls through to process.env. */
   }
 
+  const cms = fromWorker.CMS as ServiceBinding | undefined;
   return {
+    CMS: typeof cms?.fetch === "function" ? cms : undefined,
     CMS_API_URL: String(fromWorker.CMS_API_URL ?? process.env.CMS_API_URL ?? ""),
     CMS_SITE_KEY: String(fromWorker.CMS_SITE_KEY ?? process.env.CMS_SITE_KEY ?? ""),
     CMS_CACHE_MS: String(fromWorker.CMS_CACHE_MS ?? process.env.CMS_CACHE_MS ?? "0"),
@@ -44,9 +59,28 @@ export function apiBase(): string {
   return (cmsEnv().CMS_API_URL ?? "").replace(/\/+$/, "");
 }
 
-function headers(): HeadersInit {
-  const key = cmsEnv().CMS_SITE_KEY;
-  return key ? { "x-site-key": key } : {};
+/** False only when neither the binding nor a URL is available to reach the API. */
+export function cmsConfigured(): boolean {
+  return Boolean(cmsEnv().CMS) || apiBase() !== "";
+}
+
+/**
+ * One request to the content API.
+ *
+ * In production this travels the `CMS` service binding: worker to worker
+ * inside Cloudflare, never over the public internet, so the API needs no
+ * hostname of its own. `next dev` has no bindings, so it falls back to
+ * CMS_API_URL — which is how a local `wrangler dev` on the API is reached.
+ */
+export async function cmsFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const env = cmsEnv();
+  const headers = new Headers(init.headers);
+  if (env.CMS_SITE_KEY) headers.set("x-site-key", env.CMS_SITE_KEY);
+
+  // The bound worker routes on the path alone, so the origin is a formality.
+  if (env.CMS) return env.CMS.fetch(`https://venus-backend${path}`, { ...init, headers });
+
+  return fetch(`${apiBase()}${path}`, { ...init, headers, cache: "no-store" });
 }
 
 /**
@@ -59,21 +93,23 @@ function headers(): HeadersInit {
 let memo: { at: number; site: SiteContent } | null = null;
 
 async function fetchSite(): Promise<SiteContent> {
-  const base = apiBase();
-  if (!base) return SEED_SITE;
+  if (!cmsConfigured()) return SEED_SITE;
 
   const ttl = Number(cmsEnv().CMS_CACHE_MS ?? 0) || 0;
   if (memo && ttl > 0 && Date.now() - memo.at < ttl) return memo.site;
 
   try {
-    const res = await fetch(`${base}/v1/site`, {
-      headers: headers(),
-      cache: "no-store",
-    });
+    const res = await cmsFetch("/v1/site");
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
 
     const site = (await res.json()) as SiteContent;
     if (!site || !Array.isArray(site.pages)) throw new Error("Snapshot was not in the expected shape");
+
+    // A snapshot with no pages means the CMS is reachable but has nothing in
+    // it — a database that has been migrated but not yet seeded, or one that
+    // has been wiped. Rendering that verbatim turns every route into a 404, so
+    // it is treated as an outage and the in-repo seed renders instead.
+    if (site.pages.length === 0) throw new Error("Snapshot contained no pages");
 
     // Settings the panel has never been given still need to render.
     const merged: SiteContent = {
@@ -92,13 +128,9 @@ async function fetchSite(): Promise<SiteContent> {
 export const getSite = cache(fetchSite);
 
 export const getPost = cache(async (slug: string): Promise<SitePost | null> => {
-  const base = apiBase();
-  if (!base) return null;
+  if (!cmsConfigured()) return null;
   try {
-    const res = await fetch(`${base}/v1/blog/${encodeURIComponent(slug)}`, {
-      headers: headers(),
-      cache: "no-store",
-    });
+    const res = await cmsFetch(`/v1/blog/${encodeURIComponent(slug)}`);
     if (!res.ok) return null;
     const body = (await res.json()) as { post?: SitePost };
     return body.post ?? null;
@@ -110,10 +142,9 @@ export const getPost = cache(async (slug: string): Promise<SitePost | null> => {
 
 /** Used by the /admin gate. Returns null when the policy cannot be read. */
 export async function getIpPolicy(): Promise<{ enabled: boolean; allow: string[] } | null> {
-  const base = apiBase();
-  if (!base) return null;
+  if (!cmsConfigured()) return null;
   try {
-    const res = await fetch(`${base}/v1/security/policy`, { headers: headers(), cache: "no-store" });
+    const res = await cmsFetch("/v1/security/policy");
     if (!res.ok) return null;
     return (await res.json()) as { enabled: boolean; allow: string[] };
   } catch {

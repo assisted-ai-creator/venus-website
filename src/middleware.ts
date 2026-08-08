@@ -34,14 +34,53 @@ function clientIp(req: NextRequest): string {
   return raw.trim().replace(/^\[|\]$/g, "").split("%")[0];
 }
 
-async function isAllowed(apiBase: string, siteKey: string, ip: string): Promise<boolean> {
+/**
+ * The content API, as seen from middleware.
+ *
+ * Middleware is bundled for the edge runtime and cannot import the OpenNext
+ * helper, so it reads the same request-scoped global that helper reads. The
+ * symbol is a `Symbol.for`, i.e. deliberately shared across bundles.
+ *
+ * In production this yields the `CMS` service binding. Under `next dev` there
+ * is no context and it falls back to CMS_API_URL.
+ */
+/** Declared locally: importing @/lib/content would drag the seed content into
+ *  the middleware bundle, which is loaded on every /admin request. */
+interface CmsBinding {
+  fetch: (input: string, init?: RequestInit) => Promise<Response>;
+}
+
+interface CmsReach {
+  fetch: (input: string, init?: RequestInit) => Promise<Response>;
+  siteKey: string;
+}
+
+function cmsReach(): CmsReach | null {
+  const ctx = (globalThis as Record<symbol, unknown>)[Symbol.for("__cloudflare-context__")] as
+    | { env?: { CMS?: CmsBinding; CMS_SITE_KEY?: string; CMS_API_URL?: string } }
+    | undefined;
+
+  const env = ctx?.env;
+  const siteKey = env?.CMS_SITE_KEY ?? process.env.CMS_SITE_KEY ?? "";
+
+  const cms = env?.CMS;
+  if (typeof cms?.fetch === "function") {
+    // The bound worker routes on the path alone, so the origin is a formality.
+    return { fetch: (path, init) => cms.fetch(`https://venus-backend${path}`, init), siteKey };
+  }
+
+  const base = (env?.CMS_API_URL ?? process.env.CMS_API_URL ?? "").replace(/\/+$/, "");
+  if (!base) return null;
+  return { fetch: (path, init) => fetch(`${base}${path}`, { ...init, cache: "no-store" }), siteKey };
+}
+
+async function isAllowed(cms: CmsReach, ip: string): Promise<boolean> {
   const cached = decisions.get(ip);
   if (cached && Date.now() - cached.at < CACHE_MS) return cached.allowed;
 
   try {
-    const res = await fetch(`${apiBase}/v1/security/check?ip=${encodeURIComponent(ip)}`, {
-      headers: siteKey ? { "x-site-key": siteKey } : {},
-      cache: "no-store",
+    const res = await cms.fetch(`/v1/security/check?ip=${encodeURIComponent(ip)}`, {
+      headers: cms.siteKey ? { "x-site-key": cms.siteKey } : {},
     });
     if (!res.ok) return true;
 
@@ -101,11 +140,11 @@ function blocked(ip: string, isApi: boolean) {
 }
 
 export async function middleware(req: NextRequest) {
-  const apiBase = (process.env.CMS_API_URL ?? "").replace(/\/+$/, "");
-  if (!apiBase) return NextResponse.next();
+  const cms = cmsReach();
+  if (!cms) return NextResponse.next();
 
   const ip = clientIp(req);
-  const allowed = await isAllowed(apiBase, process.env.CMS_SITE_KEY ?? "", ip);
+  const allowed = await isAllowed(cms, ip);
   if (allowed) return NextResponse.next();
 
   return blocked(ip, req.nextUrl.pathname.startsWith("/api/"));

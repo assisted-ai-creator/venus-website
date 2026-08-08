@@ -7,6 +7,21 @@
       "runtimeArgs": ["run", "dev"],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "venus-workers",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "wrangler",
+        "dev",
+        "-c",
+        "wrangler.jsonc",
+        "-c",
+        "../venus-admin-panel/wrangler.jsonc",
+        "--port",
+        "8788"
+      ],
+      "port": 8788
     }
   ]
 }

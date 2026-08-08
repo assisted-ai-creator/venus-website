@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { apiBase } from "@/lib/content";
+import { cmsConfigured, cmsFetch } from "@/lib/content";
 
 /**
  * The panel's only route to the API.
@@ -17,7 +17,9 @@ import { apiBase } from "@/lib/content";
  *     cannot reach the API through the proxy either.
  */
 
-export const runtime = "edge";
+// No `runtime = "edge"` here: under the OpenNext adapter the whole app already
+// runs on workerd, and an edge-runtime route would have to be bundled as its
+// own Worker function, which the adapter refuses to do in one build.
 export const dynamic = "force-dynamic";
 
 const COOKIE = "vws_admin";
@@ -54,7 +56,7 @@ function notConfigured() {
   return NextResponse.json(
     {
       error:
-        "CMS_API_URL is not set on this deployment, so the panel has no API to talk to. See README → Environment.",
+        "This deployment has no content API bound, so the panel has nothing to talk to. See README → Environment.",
     },
     { status: 503 }
   );
@@ -62,9 +64,9 @@ function notConfigured() {
 
 /* ----------------------------------------------------------------- login --- */
 
-async function signIn(request: Request, base: string) {
+async function signIn(request: Request) {
   const body = await request.text();
-  const upstream = await fetch(`${base}/v1/auth/login`, {
+  const upstream = await cmsFetch("/v1/auth/login", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body,
@@ -82,10 +84,10 @@ async function signIn(request: Request, base: string) {
   return res;
 }
 
-async function signOut(request: Request, base: string) {
+async function signOut(request: Request) {
   const token = readCookie(request);
   if (token) {
-    await fetch(`${base}/v1/auth/logout`, {
+    await cmsFetch("/v1/auth/logout", {
       method: "POST",
       headers: { authorization: `Bearer ${token}` },
     }).catch(() => {});
@@ -105,8 +107,7 @@ const AUTH_ROUTES: Record<string, string> = {
 };
 
 async function proxy(request: Request, ctx: Ctx) {
-  const base = apiBase();
-  if (!base) return notConfigured();
+  if (!cmsConfigured()) return notConfigured();
 
   const { path } = await ctx.params;
   const segments = path ?? [];
@@ -114,8 +115,8 @@ async function proxy(request: Request, ctx: Ctx) {
   const method = request.method.toUpperCase();
 
   if (head === "session") {
-    if (method === "POST") return signIn(request, base);
-    if (method === "DELETE") return signOut(request, base);
+    if (method === "POST") return signIn(request);
+    if (method === "DELETE") return signOut(request);
   }
 
   const token = readCookie(request);
@@ -143,11 +144,11 @@ async function proxy(request: Request, ctx: Ctx) {
 
   let upstream: Response;
   try {
-    upstream = await fetch(`${base}${upstreamPath}${search}`, init);
+    upstream = await cmsFetch(`${upstreamPath}${search}`, init);
   } catch (err) {
     console.error("[admin proxy] upstream failed", err);
     return NextResponse.json(
-      { error: "The content API could not be reached. Check that it is deployed and CMS_API_URL is correct." },
+      { error: "The content API could not be reached. Check that the venus-backend worker is deployed." },
       { status: 502 }
     );
   }

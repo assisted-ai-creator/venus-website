@@ -3,8 +3,6 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { enquirySchema } from "@/lib/enquiry";
 import { school } from "@/content/school";
 
-export const runtime = "edge";
-
 interface EnquiryEnv {
   DB?: D1Database;
   RESEND_API_KEY?: string;

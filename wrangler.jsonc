@@ -1,6 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "venus-world-schools",
+  // Must match the Worker the GitHub repo is connected to in the dashboard,
+  // or Workers Builds refuses to deploy the build it just produced.
+  "name": "venus-website",
   "main": ".open-next/worker.js",
   "compatibility_date": "2025-03-25",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -13,15 +15,29 @@
   },
 
   "vars": {
-    // The content API — the venus-admin-panel worker. Every page render reads
-    // the published site from it, and /admin proxies through it. Without this
-    // the site still runs, from the typed content layer committed in src/content.
-    "CMS_API_URL": "https://venus-admin-api.REPLACE_WITH_YOUR_SUBDOMAIN.workers.dev",
+    // Only used when the CMS service binding below is absent — i.e. under
+    // `next dev`, where a local `wrangler dev` on the API answers here. In
+    // production this stays empty and the binding is used instead.
+    "CMS_API_URL": "",
 
     // Milliseconds a snapshot may be reused within one isolate. 0 keeps edits
     // instant; raise it only if the read volume makes that worth collapsing.
     "CMS_CACHE_MS": "0"
   },
+
+  // The content API — the venus-backend worker. Every page render reads the
+  // published site from it, and /admin proxies through it.
+  //
+  // A service binding rather than a URL: the request goes worker-to-worker
+  // inside Cloudflare, so the API needs no public hostname, no route and no
+  // CORS, and it cannot be reached from the internet at all. Without this the
+  // site still runs, from the typed content layer committed in src/content.
+  "services": [
+    {
+      "binding": "CMS",
+      "service": "venus-backend"
+    }
+  ],
 
   // Enquiries are written here before the notification email is attempted, so a
   // mail outage never loses a parent's enquiry. This is the same database the
