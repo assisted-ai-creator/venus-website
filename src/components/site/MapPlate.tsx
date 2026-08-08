@@ -39,7 +39,9 @@ export function MapPlate({
 
   return (
     <div className={`plate overflow-hidden ${className}`}>
-      <div className="relative aspect-[4/3] w-full bg-navy-850 sm:aspect-[16/10]">
+      {/* The map well is dark whatever the page around it is, so it declares
+          the blue contract: the Load button reverts to saffron here. */}
+      <div className="on-ink relative aspect-[4/3] w-full bg-navy-850 sm:aspect-[16/10]">
         {live ? (
           <iframe
             src={embed}
@@ -51,7 +53,7 @@ export function MapPlate({
           />
         ) : (
           <div
-            className="wall wall-dense absolute inset-0 grid place-items-center p-6 text-center"
+            className="ground-ink wall-dense absolute inset-0 grid place-items-center p-6 text-center"
             aria-hidden="true"
           >
             {/* A drawn locator standing in for the map until it is asked for. */}

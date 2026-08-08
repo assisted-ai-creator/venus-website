@@ -111,10 +111,13 @@ async function fetchSite(): Promise<SiteContent> {
     // it is treated as an outage and the in-repo seed renders instead.
     if (site.pages.length === 0) throw new Error("Snapshot contained no pages");
 
-    // Settings the panel has never been given still need to render.
+    // Settings the panel has never been given still need to render. So does a
+    // collection an older API does not publish yet — a website deployed ahead
+    // of the API sees no notices rather than crashing on an absent array.
     const merged: SiteContent = {
       ...site,
       settings: { ...SEED_SITE.settings, ...site.settings },
+      notices: Array.isArray(site.notices) ? site.notices : [],
     };
     if (ttl > 0) memo = { at: Date.now(), site: merged };
     return merged;

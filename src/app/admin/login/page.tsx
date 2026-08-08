@@ -52,7 +52,7 @@ function SignIn() {
   };
 
   return (
-    <main className="wall grid min-h-dvh place-items-center p-5">
+    <main className="ground-ink grid min-h-dvh place-items-center p-5">
       <div className="w-full max-w-md">
         <div className="mb-7 text-center text-paper">
           <Wordmark className="justify-center" />
@@ -140,7 +140,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <main className="wall grid min-h-dvh place-items-center">
+        <main className="ground-ink grid min-h-dvh place-items-center">
           <p className="chart-label text-navy-200">Loading…</p>
         </main>
       }

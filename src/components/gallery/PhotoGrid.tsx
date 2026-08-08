@@ -47,7 +47,7 @@ export function PhotoGrid({ photos }: { photos: Photo[] }) {
               onClick={() => setOpen(i)}
               className="plate group block w-full overflow-hidden text-left"
             >
-              <span className="relative block aspect-[4/3] overflow-hidden bg-navy-900">
+              <span className="relative block aspect-[4/3] overflow-hidden bg-navy-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={thumb(p.src)}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
+import { admissionStatus } from "@/lib/admissions";
 import { getSite } from "@/lib/content";
 import { organisationSchema } from "@/lib/seo";
 
@@ -70,7 +71,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <a href="#main" className="skip-link">
         Skip to content
       </a>
-      <SiteHeader school={site.settings.school} nav={site.settings.nav} />
+      <SiteHeader
+        school={site.settings.school}
+        nav={site.settings.nav}
+        admissions={admissionStatus(site.settings.school.admissionWindow)}
+      />
       <main id="main">{children}</main>
       <SiteFooter school={site.settings.school} footer={site.settings.footer} nav={site.settings.nav} />
       <script

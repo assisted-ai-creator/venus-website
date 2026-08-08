@@ -87,7 +87,8 @@ const payload = { ...SEED_PAYLOAD, mode };
 console.log(`Seeding ${API} (mode: ${mode})`);
 console.log(
   `  ${payload.pages.length} pages · ${payload.albums.length} albums · ` +
-    `${payload.media.length} photographs · ${Object.keys(payload.settings).length} settings documents`
+    `${payload.media.length} photographs · ${payload.notices.length} notices · ` +
+    `${Object.keys(payload.settings).length} settings documents`
 );
 
 /* -------------------------------------------------------------- transmit --- */

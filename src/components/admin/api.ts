@@ -146,6 +146,23 @@ export interface AdminPost {
   updatedAt: number;
 }
 
+export interface AdminNotice {
+  id: string;
+  title: string;
+  kind: string;
+  body: string;
+  /** ISO yyyy-mm-dd, or empty. */
+  date: string;
+  href: string;
+  fileMediaId: string | null;
+  file: { url: string; filename: string; mime: string; size: number } | null;
+  pinned: boolean;
+  status: string;
+  /** ISO yyyy-mm-dd, or empty for a notice that never lapses. */
+  expiresOn: string;
+  updatedAt: number;
+}
+
 export interface Enquiry {
   id: number;
   parentName: string;

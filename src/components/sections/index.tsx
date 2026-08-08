@@ -62,11 +62,21 @@ const RENDERERS: Record<string, (props: SectionProps) => ReactNode> = {
   enquiryPanel: EnquiryPanel,
 };
 
+/**
+ * A band's ground.
+ *
+ * `navy` and `navy-saffron` are the names the panel has been writing into
+ * stored pages since before the site went white, so they stay as aliases of
+ * the amber washes that replaced them rather than being renamed under content
+ * already in the database. New sections choose `amber` or `amber-deep`.
+ */
 const GROUND_CLASS: Record<SectionGround, string> = {
   wall: "wall",
   "wall-dense": "wall wall-dense",
-  navy: "border-y-2 border-navy-700 bg-navy-850",
-  "navy-saffron": "border-y-2 border-saffron bg-navy-800",
+  amber: "ground-amber",
+  "amber-deep": "ground-amber-deep",
+  navy: "ground-amber",
+  "navy-saffron": "ground-amber-deep",
   plain: "",
 };
 

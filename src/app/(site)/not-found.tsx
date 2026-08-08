@@ -12,11 +12,11 @@ export default async function NotFound() {
     <section className="wall">
       <div className="shell grid min-h-[60vh] place-items-center py-20">
         <div className="w-full max-w-2xl">
-          <p className="display text-[clamp(4rem,16vw,9rem)] leading-none text-saffron">404</p>
-          <h1 className="display mt-2 text-[clamp(1.8rem,4.5vw,2.8rem)] text-paper">
+          <p className="display text-[clamp(4rem,16vw,9rem)] leading-none on-ground-accent">404</p>
+          <h1 className="display mt-2 text-[clamp(1.8rem,4.5vw,2.8rem)] on-ground">
             That sheet is not in the series
           </h1>
-          <p className="prose-chart mt-4 text-navy-100">
+          <p className="prose-chart mt-4 on-ground-soft">
             The page you asked for does not exist, or it has moved. Everything on the site is
             reachable from the list below.
           </p>
@@ -48,9 +48,9 @@ export default async function NotFound() {
           </Plate>
 
           {helpline ? (
-            <p className="mt-7 text-navy-200">
+            <p className="mt-7 on-ground-soft">
               Still stuck? Call the school on{" "}
-              <a href={helpline.href} className="tabular font-semibold text-saffron underline">
+              <a href={helpline.href} className="tabular font-semibold on-ground-accent underline">
                 {helpline.number}
               </a>
               .

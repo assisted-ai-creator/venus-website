@@ -5,17 +5,14 @@ import type { SectionProps } from "./types";
 /** Heading, standfirst and body copy — the workhorse text block. */
 export function Prose({ data }: SectionProps) {
   const onPlate = str(data.tone, "dark") === "plate";
-  const tone = onPlate ? "ink" : "paper";
 
   const body = (
     <>
-      <SectionHeading tone={tone}>{str(data.heading)}</SectionHeading>
+      <SectionHeading>{str(data.heading)}</SectionHeading>
       {str(data.deva) ? (
-        <p className={`deva mt-2 text-xl ${onPlate ? "text-amber-ink" : "text-saffron"}`}>
-          {str(data.deva)}
-        </p>
+        <p className="deva on-ground-accent mt-2 text-xl">{str(data.deva)}</p>
       ) : null}
-      <Intro tone={tone} className={str(data.heading) ? "mt-4 text-lg" : "text-lg"}>
+      <Intro className={str(data.heading) ? "mt-4 text-lg" : "text-lg"}>
         {str(data.standfirst)}
       </Intro>
       <RichBody html={str(data.body)} className={str(data.standfirst) || str(data.heading) ? "mt-5" : ""} />
@@ -35,7 +32,7 @@ export function RichText({ data }: SectionProps) {
   if (!html.trim()) return null;
 
   if (!(data.plated ?? true)) {
-    return <RichBody html={html} className="prose-chart text-navy-100" />;
+    return <RichBody html={html} className="prose-chart on-ground-soft" />;
   }
 
   return (
@@ -55,16 +52,16 @@ export function Signature({ data }: SectionProps) {
   if (!str(data.name)) return null;
   return (
     <div className="mx-auto max-w-4xl">
-      <Rule className="mb-6 text-navy-700" />
-      <p className="display text-xl text-paper">{str(data.name)}</p>
-      {str(data.role) ? <p className="chart-label mt-1 text-navy-300">{str(data.role)}</p> : null}
+      <Rule className="mb-6 rule-ground" />
+      <p className="display text-xl on-ground">{str(data.name)}</p>
+      {str(data.role) ? <p className="chart-label mt-1 on-ground-faint">{str(data.role)}</p> : null}
     </div>
   );
 }
 
 export function SectionRule({ data }: SectionProps) {
   const gap = { tight: "my-4", normal: "my-10", loose: "my-16" }[str(data.spacing, "normal")] ?? "my-10";
-  return <Rule className={`${gap} text-navy-700`} />;
+  return <Rule className={`${gap} rule-ground`} />;
 }
 
 /**
@@ -146,7 +143,7 @@ export function VisionMission({ data }: SectionProps) {
           <TitleBand tone="navy" plate="II">
             {str(data.missionTitle, "Mission")}
           </TitleBand>
-          <p className="p-6 text-lg leading-relaxed text-navy-100 sm:p-8">{str(data.mission)}</p>
+          <p className="p-6 text-lg leading-relaxed on-ground-soft sm:p-8">{str(data.mission)}</p>
         </Plate>
       </div>
 

@@ -111,9 +111,9 @@ export function GrowthStages({ className = "" }: { className?: string }) {
               {i + 1}
             </span>
             <span>
-              <span className="display block text-lg text-paper">{s.label}</span>
-              <span className="chart-label block text-saffron">{s.range}</span>
-              <span className="mt-0.5 block text-sm text-navy-200">{s.sub}</span>
+              <span className="display block text-lg on-ground">{s.label}</span>
+              <span className="chart-label block on-ground-accent">{s.range}</span>
+              <span className="mt-0.5 block text-sm on-ground-soft">{s.sub}</span>
             </span>
           </li>
         ))}

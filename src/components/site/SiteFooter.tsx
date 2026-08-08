@@ -23,7 +23,7 @@ export function SiteFooter({
       : [{ heading: "Pages", links: nav.map((n) => ({ label: n.label, href: n.href })) }];
 
   return (
-    <footer className="wall wall-dense border-t-2 border-saffron">
+    <footer className="ground-ink wall-dense border-t-2 border-saffron">
       <div className="shell py-14 sm:py-20">
         <div className="grid gap-12 lg:grid-cols-[1.15fr_2fr]">
           <div>

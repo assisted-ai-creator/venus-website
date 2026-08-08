@@ -257,7 +257,14 @@ const homePage: SitePage = {
     section("newsPanel", {
       plateTitle: "Latest updates",
       plateNumber: "NOTICE",
-      items: news.map((n) => ({ title: n.title, kind: n.kind, date: n.date, body: n.body, href: n.href ?? "" })),
+      // Drawn from the notice board rather than typed here, so the office
+      // writes a notice once and the home page and /notices both carry it.
+      source: "board",
+      limit: 4,
+      kinds: [],
+      emptyText: "",
+      items: [],
+      ctas: [{ label: "All notices", href: "/notices", style: "ghost" }],
       layout: { ground: "navy-saffron", column: "right" },
     }),
 
@@ -791,6 +798,46 @@ const blogPage: SitePage = {
   ],
 };
 
+/**
+ * The notice board.
+ *
+ * A returning parent's page rather than a prospective one's — PRODUCT.md has
+ * current parents coming back for the planner, the results and the notices.
+ * The whole board, unlimited and unfiltered; the home page shows the top four.
+ */
+const noticesPage: SitePage = {
+  id: "seed_notices",
+  slug: "notices",
+  title: "Notices",
+  navLabel: "Notices",
+  showInNav: true,
+  status: "published",
+  isSystem: true,
+  seo: {
+    description:
+      "Notices, circulars and announcements from Venus World Schools, Manjari, Pune — admissions, results, events and achievements.",
+  },
+  header: {
+    variant: "sheet",
+    title: "Notices",
+    standfirst: "Announcements from the school office, newest first.",
+  },
+  sections: [
+    section("newsPanel", {
+      plateTitle: "The notice board",
+      plateNumber: "NOTICE",
+      source: "board",
+      limit: 0,
+      kinds: [],
+      emptyText:
+        "There are no current notices. Anything the office publishes appears here, and on the home page.",
+      items: [],
+      ctas: [],
+      layout: { ground: "wall-dense", column: "full" },
+    }),
+  ],
+};
+
 const contactPage: SitePage = {
   id: "seed_contact",
   slug: "contact",
@@ -853,6 +900,7 @@ export const seedPages: SitePage[] = [
   programmePage("secondary"),
   admissionsPage,
   galleryPage,
+  noticesPage,
   blogPage,
   contactPage,
 ];
@@ -901,6 +949,27 @@ export const seedAlbums = albums.map((a) => ({
   photoKeys: a.photos.map((p) => p.src),
 }));
 
+/* -------------------------------------------------------------- notices --- */
+
+/**
+ * The notice board as it stands in this repo.
+ *
+ * None of these expire: they are the school's standing record, not dated
+ * circulars, and inventing a takedown date for them would be inventing content.
+ * Attachments are left null — no circular has been supplied.
+ */
+export const seedNotices = news.map((n) => ({
+  id: `seed_notice_${n.slug}`,
+  title: n.title,
+  kind: n.kind as string,
+  body: n.body,
+  date: n.date,
+  href: n.href ?? "",
+  file: null,
+  pinned: false,
+  expiresOn: "",
+}));
+
 /* --------------------------------------------------------------- export --- */
 
 /** What the site renders when the API cannot be reached. */
@@ -921,6 +990,7 @@ export const SEED_SITE: SiteContent = {
     photos: a.photos.map((p) => ({ src: p.src, alt: p.alt, caption: p.caption })),
   })),
   posts: [],
+  notices: seedNotices,
   fallback: true,
 };
 
@@ -945,4 +1015,14 @@ export const SEED_PAYLOAD = {
     })),
   })),
   posts: [],
+  notices: seedNotices.map((n) => ({
+    title: n.title,
+    kind: n.kind,
+    body: n.body,
+    date: n.date,
+    href: n.href,
+    pinned: n.pinned,
+    expiresOn: n.expiresOn,
+    status: "published" as const,
+  })),
 };

@@ -29,6 +29,9 @@ export interface SiteLink {
 export type SectionGround =
   | "wall"
   | "wall-dense"
+  | "amber"
+  | "amber-deep"
+  /** Legacy names for the two amber washes. Kept for pages already stored. */
   | "navy"
   | "navy-saffron"
   | "plain";
@@ -74,6 +77,29 @@ export interface SitePage {
     trail?: { name: string; href: string }[];
   };
   sections: SiteSection[];
+}
+
+/**
+ * One entry on the school's notice board.
+ *
+ * Written once in the panel and shown wherever notices are shown, rather than
+ * typed into a particular block on a particular page.
+ */
+export interface SiteNotice {
+  id: string;
+  title: string;
+  /** Printed as a saffron label — Notice, Achievement, Admission, Event. */
+  kind: string;
+  body: string;
+  /** ISO yyyy-mm-dd, or empty for an undated notice. */
+  date: string;
+  href: string;
+  /** A circular, planner or result sheet attached to the notice. */
+  file: { url: string; filename: string; mime: string; size: number } | null;
+  /** Held above the dated run. */
+  pinned: boolean;
+  /** ISO yyyy-mm-dd after which the notice comes down. Empty never lapses. */
+  expiresOn: string;
 }
 
 export interface SiteAlbum {
@@ -180,6 +206,8 @@ export interface SiteContent {
   pages: SitePage[];
   albums: SiteAlbum[];
   posts: SitePostSummary[];
+  /** Every published notice, lapsed ones included — see `liveNotices`. */
+  notices: SiteNotice[];
   /** True when the API could not be reached and the in-repo seed is showing. */
   fallback?: boolean;
 }

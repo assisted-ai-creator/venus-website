@@ -180,13 +180,13 @@ export function EnquiryPanel({ data, site }: SectionProps) {
             {showPhones
               ? s.phones.map((p) => (
                   <div key={p.number} className="flex items-center gap-4">
-                    <span className="flex-none text-saffron">
+                    <span className="flex-none on-ground-accent">
                       <Icon name="phone" size={20} />
                     </span>
                     <span>
-                      <dt className="chart-label text-navy-300">{p.label}</dt>
+                      <dt className="chart-label on-ground-faint">{p.label}</dt>
                       <dd>
-                        <a href={p.href} className="tabular text-lg text-paper hover:text-saffron">
+                        <a href={p.href} className="tabular text-lg on-ground hover-accent">
                           {p.number}
                         </a>
                       </dd>
@@ -197,12 +197,12 @@ export function EnquiryPanel({ data, site }: SectionProps) {
 
             {showHours && s.hours[0] ? (
               <div className="flex items-center gap-4">
-                <span className="flex-none text-saffron">
+                <span className="flex-none on-ground-accent">
                   <Icon name="clock" size={20} />
                 </span>
                 <span>
-                  <dt className="chart-label text-navy-300">Office hours</dt>
-                  <dd className="text-paper">
+                  <dt className="chart-label on-ground-faint">Office hours</dt>
+                  <dd className="on-ground">
                     {s.hours[0].days}, {s.hours[0].time}
                   </dd>
                 </span>

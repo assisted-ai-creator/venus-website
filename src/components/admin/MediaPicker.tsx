@@ -12,7 +12,7 @@ import { Button, Dialog, Empty, Note, useToast } from "./ui";
  * in the frame, and the only place that can be entered is here.
  */
 
-export function useMedia(kind: "all" | "image" | "video" = "all") {
+export function useMedia(kind: "all" | "image" | "video" | "file" = "all") {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -46,7 +46,7 @@ export function UploadButton({
   label = "Upload",
 }: {
   onUploaded: (item: MediaItem) => void;
-  kind?: "all" | "image" | "video";
+  kind?: "all" | "image" | "video" | "file";
   label?: string;
 }) {
   const input = useRef<HTMLInputElement | null>(null);
@@ -54,12 +54,16 @@ export function UploadButton({
   const [progress, setProgress] = useState("");
   const { notify } = useToast();
 
+  const IMAGES = "image/jpeg,image/png,image/webp,image/avif,image/gif";
+  const VIDEOS = "video/mp4,video/webm";
   const accept =
     kind === "image"
-      ? "image/jpeg,image/png,image/webp,image/avif,image/gif"
+      ? IMAGES
       : kind === "video"
-        ? "video/mp4,video/webm"
-        : "image/jpeg,image/png,image/webp,image/avif,image/gif,video/mp4,video/webm";
+        ? VIDEOS
+        : kind === "file"
+          ? "application/pdf"
+          : `${IMAGES},${VIDEOS},application/pdf`;
 
   const send = async (files: FileList) => {
     setBusy(true);
@@ -132,15 +136,27 @@ export function MediaGrid({
             {m.kind === "video" ? (
               // eslint-disable-next-line jsx-a11y/media-has-caption
               <video src={m.url} muted playsInline preload="metadata" />
+            ) : m.kind === "file" ? (
+              // A document has no frame to show, so the tile states what it is.
+              <span className="grid h-full w-full place-items-center bg-navy-900 p-3 text-center">
+                <span className="chart-label text-navy-300">
+                  {(m.mime.split("/").pop() ?? "file").toUpperCase()}
+                </span>
+              </span>
             ) : (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img src={m.url} alt={m.alt || m.filename} loading="lazy" decoding="async" />
             )}
             <span className="adm-tile-meta block">
               <span className="block truncate text-paper">{m.filename || m.key}</span>
-              <span className={m.alt ? "text-navy-300" : "text-saffron"}>
-                {m.alt ? m.alt.slice(0, 48) : "No alt text"}
-              </span>
+              {/* Alt text describes a picture. A document is named, not described. */}
+              {m.kind === "file" ? (
+                <span className="text-navy-300">{m.size ? `${Math.round(m.size / 1024)} KB` : "Document"}</span>
+              ) : (
+                <span className={m.alt ? "text-navy-300" : "text-saffron"}>
+                  {m.alt ? m.alt.slice(0, 48) : "No alt text"}
+                </span>
+              )}
             </span>
           </button>
         </li>
@@ -162,7 +178,7 @@ export function MediaPicker({
   open: boolean;
   onClose: () => void;
   onPick: (items: MediaItem[]) => void;
-  kind?: "all" | "image" | "video";
+  kind?: "all" | "image" | "video" | "file";
   multiple?: boolean;
   title?: string;
 }) {
@@ -246,7 +262,7 @@ export function MediaField({
 }: {
   value: string;
   onChange: (mediaId: string, item: MediaItem | null) => void;
-  kind?: "all" | "image" | "video";
+  kind?: "all" | "image" | "video" | "file";
   label?: string;
   help?: string;
 }) {

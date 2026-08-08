@@ -36,6 +36,9 @@ export const navigation: NavItem[] = [
     ],
   },
   { label: "Admissions", href: "/admissions" },
+  // The returning parent's entry point — the one menu item that is not aimed
+  // at a family still deciding.
+  { label: "Notices", href: "/notices" },
   { label: "Gallery", href: "/gallery" },
   { label: "Contact", href: "/contact" },
 ];

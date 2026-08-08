@@ -60,12 +60,12 @@ export default async function AlbumPage({ params }: Params) {
           {album.photos.length ? (
             <PhotoGrid photos={album.photos} />
           ) : (
-            <p className="chart-label text-navy-200">This album has no photographs yet.</p>
+            <p className="chart-label on-ground-soft">This album has no photographs yet.</p>
           )}
 
           <nav
             aria-label="Other albums"
-            className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t-2 border-navy-700 pt-7"
+            className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t-2 keyline-ground pt-7"
           >
             <Link href="/gallery" className="btn btn-ghost">
               <Icon name="chevron" size={13} className="rotate-180" />

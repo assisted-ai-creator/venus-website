@@ -5,9 +5,23 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Wordmark } from "./Wordmark";
 import { Icon } from "@/components/chart/Icon";
+import type { AdmissionStatus } from "@/lib/admissions";
 import type { NavItem, SchoolSettings } from "@/lib/site";
 
-export function SiteHeader({ school, nav }: { school: SchoolSettings; nav: NavItem[] }) {
+/**
+ * `admissions` is worked out on the server and handed down rather than
+ * computed here: the strip is the same for every reader of one request, and a
+ * clock read during hydration would only invite it to disagree with itself.
+ */
+export function SiteHeader({
+  school,
+  nav,
+  admissions,
+}: {
+  school: SchoolSettings;
+  nav: NavItem[];
+  admissions: AdmissionStatus;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -41,19 +55,24 @@ export function SiteHeader({ school, nav }: { school: SchoolSettings; nav: NavIt
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  const admissions = school.admissionWindow;
+  const session = school.admissionWindow.session;
 
   return (
-    <header className="sticky top-0 z-50">
-      {/* The school's live notice, printed as a running strip. */}
-      {admissions.session ? (
-        <div className="bg-saffron text-ink">
+    <header className="on-ink sticky top-0 z-50">
+      {/* The school's live notice, printed as a running strip. A window that
+          has run out loses the saffron with it — closed is not a callout. */}
+      {session || admissions.detail ? (
+        <div
+          className={
+            admissions.state === "closed"
+              ? "bg-navy-800 text-navy-100"
+              : "bg-saffron text-ink"
+          }
+        >
           <div className="shell flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-1.5">
-            <p className="chart-label">Admissions open · {admissions.session}</p>
-            {admissions.opens && admissions.closes ? (
-              <p className="chart-label tabular opacity-75">
-                {admissions.opens} – {admissions.closes}
-              </p>
+            <p className="chart-label">{admissions.label}</p>
+            {admissions.detail ? (
+              <p className="chart-label tabular opacity-75">{admissions.detail}</p>
             ) : null}
           </div>
         </div>
@@ -124,7 +143,7 @@ export function SiteHeader({ school, nav }: { school: SchoolSettings; nav: NavIt
                 </Link>
               )
             )}
-            {school.registrationUrl ? (
+            {school.registrationUrl && admissions.showRegister ? (
               <a
                 href={school.registrationUrl}
                 target="_blank"
@@ -178,14 +197,14 @@ export function SiteHeader({ school, nav }: { school: SchoolSettings; nav: NavIt
                 </li>
               ))}
             </ul>
-            {school.registrationUrl ? (
+            {school.registrationUrl && admissions.showRegister ? (
               <a
                 href={school.registrationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-primary mt-7 w-full"
               >
-                Register{admissions.session ? ` for ${admissions.session}` : ""}
+                Register{session ? ` for ${session}` : ""}
               </a>
             ) : null}
           </nav>

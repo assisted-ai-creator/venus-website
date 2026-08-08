@@ -46,13 +46,13 @@ export function GalleryGrid({ data, site }: SectionProps) {
           return (
             <div key={cat} className="mb-14 last:mb-0">
               {grouped ? (
-                <h3 className="display mt-10 text-[clamp(1.6rem,3.6vw,2.4rem)] text-paper">{cat}</h3>
+                <h3 className="display mt-10 text-[clamp(1.6rem,3.6vw,2.4rem)] on-ground">{cat}</h3>
               ) : null}
               <ul className={`grid gap-5 sm:grid-cols-2 lg:grid-cols-3 ${grouped ? "mt-7" : "mt-10"}`}>
                 {inGroup.map((a) => (
                   <li key={a.slug}>
                     <Link href={`/gallery/${a.slug}`} className="plate group block overflow-hidden">
-                      <span className="relative block aspect-[4/3] overflow-hidden bg-navy-900">
+                      <span className="relative block aspect-[4/3] overflow-hidden bg-navy-100">
                         <Img
                           src={thumb(a.cover)}
                           alt={a.coverAlt || a.title}
@@ -177,7 +177,7 @@ export function VideoPanel({ data }: SectionProps) {
           <ul className="grid gap-6 sm:grid-cols-2">
             {videos.map((v) => (
               <li key={v.youtubeId}>
-                <div className="aspect-video overflow-hidden border-2 border-navy-300 bg-navy-900">
+                <div className="aspect-video overflow-hidden border-2 border-ink bg-navy-100">
                   <iframe
                     src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.youtubeId)}`}
                     title={v.title || "School film"}
@@ -187,12 +187,12 @@ export function VideoPanel({ data }: SectionProps) {
                     className="h-full w-full border-0"
                   />
                 </div>
-                {v.title ? <p className="chart-label mt-2.5 text-navy-100">{v.title}</p> : null}
+                {v.title ? <p className="chart-label mt-2.5 on-ground-soft">{v.title}</p> : null}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="prose-chart text-navy-100">{str(data.intro)}</p>
+          <p className="prose-chart on-ground-soft">{str(data.intro)}</p>
         )}
 
         {str(data.channelUrl) ? (

@@ -12,23 +12,23 @@ export function Hero({ data }: SectionProps) {
     <div className="relative">
       <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-14">
         <div>
-          <h1 className="display text-[clamp(2.6rem,7.5vw,5.4rem)] text-paper">
+          <h1 className="display text-[clamp(2.6rem,7.5vw,5.4rem)] on-ground">
             {str(data.titleLead)}
             {str(data.titleLead) && str(data.titleHighlight) ? <br /> : null}
             {str(data.titleHighlight) ? (
-              <span className="text-saffron">{str(data.titleHighlight)}</span>
+              <span className="on-ground-accent">{str(data.titleHighlight)}</span>
             ) : null}
           </h1>
 
           {str(data.mottoDeva) ? (
-            <p className="deva mt-6 text-xl text-navy-100 sm:text-2xl">{str(data.mottoDeva)}</p>
+            <p className="deva mt-6 text-xl on-ground-soft sm:text-2xl">{str(data.mottoDeva)}</p>
           ) : null}
           {str(data.motto) ? (
-            <p className="chart-label mt-1 text-saffron">{str(data.motto)}</p>
+            <p className="chart-label mt-1 on-ground-accent">{str(data.motto)}</p>
           ) : null}
 
           {str(data.intro) ? (
-            <p className="prose-chart mt-7 text-lg text-navy-100">{str(data.intro)}</p>
+            <p className="prose-chart mt-7 text-lg on-ground-soft">{str(data.intro)}</p>
           ) : null}
 
           <Buttons items={links(data.ctas)} className="mt-8" />
@@ -39,8 +39,8 @@ export function Hero({ data }: SectionProps) {
 
       {meta.length ? (
         <>
-          <Rule className="mt-12 text-navy-700 sm:mt-14" />
-          <PublisherBlock className="mt-5 text-navy-200" items={meta} />
+          <Rule className="mt-12 rule-ground sm:mt-14" />
+          <PublisherBlock className="mt-5 on-ground-soft" items={meta} />
         </>
       ) : null}
     </div>
@@ -60,8 +60,8 @@ export function CtaBand({ data }: SectionProps) {
         <dl className="mt-8 grid gap-x-8 gap-y-5 sm:grid-cols-2">
           {facts.map((f) => (
             <div key={f.label}>
-              <dt className="chart-label text-saffron">{f.label}</dt>
-              <dd className="mt-1 text-navy-100">{f.value}</dd>
+              <dt className="chart-label on-ground-accent">{f.label}</dt>
+              <dd className="mt-1 on-ground-soft">{f.value}</dd>
             </div>
           ))}
         </dl>

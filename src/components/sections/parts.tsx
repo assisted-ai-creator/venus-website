@@ -89,23 +89,23 @@ export function Buttons({ items, className = "" }: { items: SiteLink[]; classNam
 
 /* ----------------------------------------------------------------- type --- */
 
-/** A heading that keeps its scale whether it opens a page or sits mid-page. */
+/**
+ * A heading that keeps its scale whether it opens a page or sits mid-page.
+ *
+ * It no longer takes a tone: `.on-ground` resolves against whatever band or
+ * plate it lands on, so the same heading sets correctly on white, on amber and
+ * on blue without the caller having to know where it is.
+ */
 export function SectionHeading({
   children,
-  tone = "paper",
   className = "",
 }: {
   children: ReactNode;
-  tone?: "paper" | "ink";
   className?: string;
 }) {
   if (!children) return null;
   return (
-    <h2
-      className={`display text-[clamp(1.9rem,4.5vw,3.1rem)] ${
-        tone === "ink" ? "text-ink" : "text-paper"
-      } ${className}`}
-    >
+    <h2 className={`display on-ground text-[clamp(1.9rem,4.5vw,3.1rem)] ${className}`}>
       {children}
     </h2>
   );
@@ -113,19 +113,13 @@ export function SectionHeading({
 
 export function Intro({
   children,
-  tone = "paper",
   className = "mt-4",
 }: {
   children: ReactNode;
-  tone?: "paper" | "ink";
   className?: string;
 }) {
   if (!children) return null;
-  return (
-    <p className={`prose-chart ${tone === "ink" ? "text-ink-soft" : "text-navy-100"} ${className}`}>
-      {children}
-    </p>
-  );
+  return <p className={`prose-chart on-ground-soft ${className}`}>{children}</p>;
 }
 
 /**

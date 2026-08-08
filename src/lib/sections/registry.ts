@@ -586,20 +586,54 @@ export const SECTIONS: SectionDef[] = [
   {
     type: "newsPanel",
     name: "Notices",
-    description: "Dated notices and achievements, newest first.",
+    description: "The notice board — pinned notices first, then newest. Written under Notices, not here.",
     group: "Lists",
     fields: [
       text("plateTitle", "Plate heading", { width: "half" }),
       text("plateNumber", "Plate number", { width: "half" }),
+      select("source", "Notices come from", [
+        ["board", "The notice board"],
+        ["manual", "The list typed below"],
+      ], {
+        help: "Leave this on the notice board and a notice written once appears on every page that shows one.",
+      }),
+      {
+        name: "limit",
+        label: "How many to show",
+        type: "number",
+        help: "Leave at 0 to show every current notice.",
+        showWhen: { field: "source", equals: ["board"] },
+      },
+      list("kinds", "Only these kinds", [text("kind", "Kind")], {
+        addLabel: "Add a kind",
+        itemLabel: "kind",
+        help: "Leave empty for every kind. Useful for a page that should show only achievements.",
+        showWhen: { field: "source", equals: ["board"] },
+      }),
+      area("emptyText", "When there is nothing to show", {
+        rows: 2,
+        help: "Printed in place of the list once every notice has lapsed. Leave empty to hide the block instead.",
+        showWhen: { field: "source", equals: ["board"] },
+      }),
+      list("ctas", "Buttons", LINK_FIELDS, { addLabel: "Add a button", max: 2, itemLabel: "label" }),
       list("items", "Notices", [
         text("title", "Title"),
         text("kind", "Kind", { width: "half", placeholder: "Notice / Achievement / Admission / Event" }),
         text("date", "Date", { width: "half", placeholder: "2026-01-01" }),
         area("body", "Text", { rows: 2 }),
         text("href", "Links to"),
-      ], { addLabel: "Add a notice", itemLabel: "title" }),
+      ], { addLabel: "Add a notice", itemLabel: "title", showWhen: { field: "source", equals: ["manual"] } }),
     ],
-    defaults: { plateTitle: "Latest updates", plateNumber: "NOTICE", items: [] },
+    defaults: {
+      plateTitle: "Latest updates",
+      plateNumber: "NOTICE",
+      source: "board",
+      limit: 4,
+      kinds: [],
+      emptyText: "",
+      items: [],
+      ctas: [],
+    },
   },
 
   {
@@ -707,10 +741,10 @@ export const SECTION_GROUPS = ["Openers", "Text", "Data", "Lists", "Media", "Con
 /** Placement is edited in its own panel rather than repeated in every schema. */
 export const LAYOUT_FIELDS: Field[] = [
   select("ground", "Background", [
-    ["wall", "Blueprint wall"],
-    ["wall-dense", "Fine blueprint wall"],
-    ["navy", "Solid blue band"],
-    ["navy-saffron", "Blue band, saffron rule"],
+    ["wall", "White, blueprint grid"],
+    ["wall-dense", "White, fine grid"],
+    ["amber", "Amber band"],
+    ["amber-deep", "Deep amber band"],
     ["plain", "No background"],
   ]),
   select("column", "Column", [

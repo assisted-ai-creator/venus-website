@@ -86,8 +86,8 @@ export default async function BlogPostPage({ params }: Params) {
           </article>
 
           {others.length ? (
-            <nav aria-label="More posts" className="mt-14 border-t-2 border-navy-700 pt-8">
-              <h2 className="chart-label mb-5 text-saffron">More from the school</h2>
+            <nav aria-label="More posts" className="mt-14 border-t-2 keyline-ground pt-8">
+              <h2 className="chart-label mb-5 on-ground-accent">More from the school</h2>
               <ul className="grid gap-4 sm:grid-cols-3">
                 {others.map((p) => (
                   <li key={p.slug}>

@@ -2,17 +2,37 @@
 
 /* ============================================================================
    VENUS WORLD SCHOOLS — "The Wall Chart"
-   The offset-printed Indian classroom chart, set in institutional blue and
-   saffron. Flat spot inks, thick keylines, numbered callouts on leader lines.
+   The offset-printed Indian classroom chart. White stock under a blueprint
+   grid, institutional blue as the action ink, amber as the section wash.
+   Flat spot inks, thick keylines, numbered callouts on leader lines.
+
+   COLOUR IS A GROUND CONTRACT, NOT A PER-ELEMENT DECISION.
+   Every band declares what it is — .wall, .ground-amber, .ground-ink, .plate —
+   and each one publishes the same six variables for whatever sits on it:
+
+     --on-ground         primary text
+     --on-ground-soft    body and secondary text
+     --on-ground-faint   labels, meta, captions
+     --on-ground-accent  the amber role, at a value legible on this ground
+     --ground-line       hairlines, rules, ghost-button borders
+     --plate-bg          what a plate laid on this ground is printed on
+
+   Components then say what a thing *is* (.on-ground-soft) rather than what
+   colour it happens to be, so a band can be recoloured — or moved from white
+   to amber to blue — without touching a single component. The button and
+   focus inks ride along the same contract: blue on light grounds, saffron on
+   blue ones, because a control has to contrast with what it sits on.
 
    Component classes live in @layer components so Tailwind utilities written on
    an element (lg:hidden, !px-3) always win over them.
    ========================================================================== */
 
 @theme {
-  /* --- Inks. Oxford/federal blue is the ground; saffron is the callout ink. */
+  /* --- Inks. Ink is the type; institutional blue is the action. */
   --color-ink: #0a1826;
   --color-ink-soft: #24384c;
+  /* Meta and captions on white — 6.4:1, so it survives at label sizes. */
+  --color-ink-faint: #4a627a;
 
   --color-navy-950: #001631;
   --color-navy-900: #002147;
@@ -26,15 +46,22 @@
 
   --color-saffron: #ffab1f;
   --color-saffron-deep: #d97d00;
-  /* Saffron on cream is 1.7:1 and saffron-deep only 2.6:1. This is the amber
-     that survives the paper ground — 5.7:1 — for any saffron-coded text or
-     glyph sitting on a plate. */
+  /* Saffron on white is 1.9:1. This is the amber that survives a light
+     ground — 6.8:1 — for any saffron-coded text, marker or glyph. */
   --color-amber-ink: #8a4b00;
   --color-saffron-100: #ffeccb;
 
+  /* --- Section washes. Amber carries a band without shouting; ink stays at
+     15.9:1 on the lighter one and 13.4:1 on the deeper. */
+  --color-amber-wash: #fff4e2;
+  --color-amber-wash-deep: #ffe4bd;
+  --color-amber-line: #e8d6b8;
+
   --color-paper: #f4efe3;
-  --color-paper-bright: #fbf8f1;
-  --color-paper-shade: #e6dfcd;
+  --color-paper-bright: #f7f9fc;
+  /* The hairline inside a plate. Cool, because plates are printed on white. */
+  --color-paper-shade: #dde4ec;
+  --color-hairline: #cfd8e2;
 
   --color-verify: #1b6e4a;
   --color-alert: #c8321e;
@@ -56,7 +83,22 @@
   :root {
     --gutter: clamp(1.25rem, 5vw, 4.5rem);
     --plate-max: 78rem;
-    color-scheme: dark;
+    color-scheme: light;
+
+    /* The white ground's contract, declared at the root so anything rendered
+       outside a band — a bare page, a portal, an error boundary — still has a
+       complete set to read. .wall repeats it for explicitly-grounded bands. */
+    --on-ground: var(--color-ink);
+    --on-ground-soft: var(--color-ink-soft);
+    --on-ground-faint: var(--color-ink-faint);
+    --on-ground-accent: var(--color-amber-ink);
+    --ground-line: var(--color-hairline);
+    --plate-bg: #ffffff;
+
+    --btn-bg: var(--color-navy-700);
+    --btn-fg: #ffffff;
+    --btn-bg-hover: var(--color-navy-600);
+    --focus-ring: var(--color-navy-700);
   }
 
   * {
@@ -69,8 +111,8 @@
   }
 
   body {
-    background-color: var(--color-navy-900);
-    color: var(--color-paper);
+    background-color: #ffffff;
+    color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 1rem;
     line-height: 1.65;
@@ -79,9 +121,9 @@
     overflow-x: hidden;
   }
 
-  /* Focus: a saffron register mark, visible on every ground. */
+  /* Focus: a register mark in whichever ink the current ground can show. */
   :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
-    outline: 3px solid var(--color-saffron);
+    outline: 3px solid var(--focus-ring);
     outline-offset: 2px;
     border-radius: 1px;
   }
@@ -101,26 +143,126 @@
 }
 
 @layer components {
-  /* The wall behind the chart: a faint blueprint grid, printed not glowing. */
-  .wall {
+  /* --- Grounds ----------------------------------------------------------
+     Each publishes the contract above. The blueprint grid runs through all of
+     them at the same measure, in whichever ink that ground can carry, so the
+     chart reads as one continuous sheet from header to footer. */
+
+  .wall,
+  .ground-amber,
+  .ground-amber-deep,
+  .ground-ink {
     position: relative;
-    background-color: var(--color-navy-900);
     background-image:
-      linear-gradient(
-        to right,
-        color-mix(in srgb, var(--color-navy-300) 7%, transparent) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        to bottom,
-        color-mix(in srgb, var(--color-navy-300) 7%, transparent) 1px,
-        transparent 1px
-      );
+      linear-gradient(to right, var(--grid-ink) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-ink) 1px, transparent 1px);
     background-size: 2.25rem 2.25rem;
+  }
+
+  /* The page itself: literal white under a faint blue grid. */
+  .wall {
+    --grid-ink: color-mix(in srgb, var(--color-navy-600) 11%, transparent);
+    background-color: #ffffff;
+    color: var(--color-ink);
+
+    --on-ground: var(--color-ink);
+    --on-ground-soft: var(--color-ink-soft);
+    --on-ground-faint: var(--color-ink-faint);
+    --on-ground-accent: var(--color-amber-ink);
+    --ground-line: var(--color-hairline);
+    --plate-bg: #ffffff;
   }
 
   .wall-dense {
     background-size: 0.75rem 0.75rem;
+  }
+
+  /* The section wash. Saffron keylines top and bottom so the band is a
+     printed register, not a colour-fill. */
+  .ground-amber,
+  .ground-amber-deep {
+    --grid-ink: color-mix(in srgb, var(--color-saffron-deep) 9%, transparent);
+    color: var(--color-ink);
+    border-block: var(--keyline) solid var(--color-saffron);
+
+    --on-ground: var(--color-ink);
+    --on-ground-soft: var(--color-ink-soft);
+    --on-ground-faint: #6b573a;
+    --on-ground-accent: var(--color-amber-ink);
+    --ground-line: var(--color-amber-line);
+    /* A plate laid on amber is printed white, so it lifts off the wash. */
+    --plate-bg: #ffffff;
+  }
+
+  .ground-amber {
+    background-color: var(--color-amber-wash);
+  }
+
+  .ground-amber-deep {
+    background-color: var(--color-amber-wash-deep);
+    --on-ground-faint: #6a5027;
+    --ground-line: #e3c89f;
+  }
+
+  /* The blue ground survives as chrome — header, footer, the panel — where a
+     blue button would vanish, so the action ink reverts to saffron.
+
+     `.ground-ink` paints it. `.on-ink` only declares the contract, for chrome
+     that paints its own background: the header is translucent over the page
+     and would lose its backdrop blur under an opaque parent. */
+  .ground-ink {
+    --grid-ink: color-mix(in srgb, var(--color-navy-300) 7%, transparent);
+    background-color: var(--color-navy-900);
+    color: var(--color-paper);
+  }
+
+  .ground-ink,
+  .on-ink {
+    --on-ground: var(--color-paper);
+    --on-ground-soft: var(--color-navy-100);
+    --on-ground-faint: var(--color-navy-300);
+    --on-ground-accent: var(--color-saffron);
+    --ground-line: var(--color-navy-700);
+    --plate-bg: var(--color-paper);
+
+    --btn-bg: var(--color-saffron);
+    --btn-fg: var(--color-ink);
+    --btn-bg-hover: #ffbb47;
+    --focus-ring: var(--color-saffron);
+  }
+
+  /* --- Reading the ground ----------------------------------------------
+     What a thing is, not what colour it is. */
+
+  .on-ground {
+    color: var(--on-ground);
+  }
+  .on-ground-soft {
+    color: var(--on-ground-soft);
+  }
+  .on-ground-faint {
+    color: var(--on-ground-faint);
+  }
+  .on-ground-accent {
+    color: var(--on-ground-accent);
+  }
+  .keyline-ground {
+    border-color: var(--ground-line);
+  }
+  /* `.rule-double` draws in currentColor, so a rule sets its colour this way. */
+  .rule-ground {
+    color: var(--ground-line);
+  }
+
+  /* Hover goes to the accent on every ground: amber on white, saffron on blue.
+     These exist because `hover:` and `group-hover:` are Tailwind variants and
+     cannot be pointed at a component class. */
+  .hover-accent {
+    transition: color 0.15s var(--ease-chart);
+  }
+  .hover-accent:hover,
+  .group:hover .group-accent {
+    color: var(--on-ground-accent);
   }
 
   /* --- Type ------------------------------------------------------------ */
@@ -163,8 +305,8 @@
 
   /* --- Editor copy ------------------------------------------------------
      Everything the panel's writing tools can emit, given the chart's
-     typography. Set on a plate the colours are inherited; set on the blue
-     ground the `.rich-on-wall` variant lifts them. */
+     typography. Colour comes from the ground contract, so the same HTML sets
+     correctly on a white page, an amber band or a blue plate. */
 
   .rich {
     max-width: 68ch;
@@ -222,7 +364,7 @@
   }
 
   .rich li::marker {
-    color: var(--color-amber-ink);
+    color: var(--on-ground-accent);
     font-weight: 700;
   }
 
@@ -299,17 +441,31 @@
     margin-block: 2em;
   }
 
-  /* --- The plate: a sheet of chart stock, keylined, pinned to the wall --- */
+  /* --- The plate: a sheet of chart stock, keylined, laid on the grid -----
+     The plate is printed on whatever the ground says, and the grid stops at
+     its edge — which is what makes it read as a separate sheet on a white
+     page rather than a box drawn on one. */
 
   .plate {
     position: relative;
-    background-color: var(--color-paper);
+    background-color: var(--plate-bg);
     color: var(--color-ink);
     border: var(--keyline) solid var(--color-ink);
     border-radius: var(--radius-plate);
     box-shadow:
-      0 1px 0 0 color-mix(in srgb, var(--color-ink) 55%, transparent),
-      0 18px 34px -22px rgb(0 0 0 / 0.75);
+      0 1px 0 0 color-mix(in srgb, var(--color-ink) 45%, transparent),
+      0 16px 30px -20px rgb(10 24 38 / 0.32);
+
+    --on-ground: var(--color-ink);
+    --on-ground-soft: var(--color-ink-soft);
+    --on-ground-faint: var(--color-ink-faint);
+    --on-ground-accent: var(--color-amber-ink);
+    --ground-line: var(--color-paper-shade);
+
+    --btn-bg: var(--color-navy-700);
+    --btn-fg: #ffffff;
+    --btn-bg-hover: var(--color-navy-600);
+    --focus-ring: var(--color-navy-700);
   }
 
   /* Paper tooth — a very faint printed grain, never a gradient sheen. */
@@ -322,7 +478,7 @@
     opacity: 0.5;
     background-image: radial-gradient(
       circle at 1px 1px,
-      color-mix(in srgb, var(--color-ink) 9%, transparent) 0.5px,
+      color-mix(in srgb, var(--color-ink) 8%, transparent) 0.5px,
       transparent 0
     );
     background-size: 4px 4px;
@@ -331,7 +487,20 @@
   .plate-dark {
     background-color: var(--color-navy-850);
     color: var(--color-paper);
-    border-color: var(--color-navy-300);
+    /* The ink keyline, not a navy one: a dark plate is often set beside a
+       white one, and the pair has to be cut from the same sheet. */
+    border-color: var(--color-ink);
+
+    --on-ground: var(--color-paper);
+    --on-ground-soft: var(--color-navy-100);
+    --on-ground-faint: var(--color-navy-300);
+    --on-ground-accent: var(--color-saffron);
+    --ground-line: var(--color-navy-700);
+
+    --btn-bg: var(--color-saffron);
+    --btn-fg: var(--color-ink);
+    --btn-bg-hover: #ffbb47;
+    --focus-ring: var(--color-saffron);
   }
 
   .plate-dark::after {
@@ -390,7 +559,9 @@
     border-color: var(--color-ink);
   }
 
-  /* --- Controls --------------------------------------------------------- */
+  /* --- Controls ---------------------------------------------------------
+     Every button reads its ink from the ground: institutional blue on white
+     and amber, saffron on blue. */
 
   .btn {
     display: inline-flex;
@@ -413,44 +584,44 @@
   }
 
   .btn-primary {
-    background-color: var(--color-saffron);
-    color: var(--color-ink);
-    box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.45);
+    background-color: var(--btn-bg);
+    color: var(--btn-fg);
+    box-shadow: 0 2px 8px -2px rgb(10 24 38 / 0.35);
   }
 
   .btn-primary:hover {
-    background-color: #ffbb47;
+    background-color: var(--btn-bg-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 18px -6px rgb(0 0 0 / 0.55);
+    box-shadow: 0 8px 18px -6px rgb(10 24 38 / 0.45);
   }
 
   .btn-primary:active {
     transform: translateY(1px);
-    box-shadow: 0 1px 4px -1px rgb(0 0 0 / 0.4);
+    box-shadow: 0 1px 4px -1px rgb(10 24 38 / 0.4);
   }
 
   .btn-ghost {
     background-color: transparent;
-    color: var(--color-paper);
-    border-color: var(--color-navy-300);
+    color: var(--on-ground);
+    border-color: var(--on-ground-faint);
   }
 
   .btn-ghost:hover {
-    background-color: color-mix(in srgb, var(--color-navy-100) 12%, transparent);
-    border-color: var(--color-paper);
+    background-color: color-mix(in srgb, var(--on-ground) 8%, transparent);
+    border-color: var(--on-ground);
   }
 
   .btn-ink {
-    background-color: var(--color-navy-900);
-    color: var(--color-paper);
+    background-color: var(--color-ink);
+    color: #ffffff;
     border-color: var(--color-ink);
-    box-shadow: 0 2px 8px -2px rgb(10 24 38 / 0.5);
+    box-shadow: 0 2px 8px -2px rgb(10 24 38 / 0.4);
   }
 
   .btn-ink:hover {
-    background-color: var(--color-navy-800);
+    background-color: var(--color-navy-900);
     transform: translateY(-2px);
-    box-shadow: 0 8px 18px -6px rgb(10 24 38 / 0.6);
+    box-shadow: 0 8px 18px -6px rgb(10 24 38 / 0.5);
   }
 
   .btn:disabled {
@@ -475,7 +646,7 @@
   }
 
   .field::placeholder {
-    color: #566b7c;
+    color: var(--color-ink-faint);
     opacity: 1;
   }
 
@@ -503,8 +674,8 @@
     top: -4rem;
     z-index: 100;
     padding: 0.75rem 1.25rem;
-    background: var(--color-saffron);
-    color: var(--color-ink);
+    background: var(--color-navy-700);
+    color: #ffffff;
     font-family: var(--font-label);
     font-weight: 700;
     text-transform: uppercase;

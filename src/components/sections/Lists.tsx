@@ -5,6 +5,7 @@ import { InView } from "@/components/chart/InView";
 import { CampusCutaway } from "@/components/diagrams/CampusCutaway";
 import { GrowthStages } from "@/components/diagrams/GrowthStages";
 import { childPages } from "@/lib/site";
+import { liveNotices } from "@/lib/notices";
 import { thumb } from "@/lib/img";
 import { Buttons, Img, Intro, SectionHeading, links, num, rows, str } from "./parts";
 import type { SectionProps } from "./types";
@@ -74,8 +75,8 @@ export function Steps({ data }: SectionProps) {
           {steps.map((s, i) => (
             <div key={`${str(s.title)}-${i}`} className="rise" style={{ "--delay": `${i * 100}ms` } as React.CSSProperties}>
               <span className="callout-num callout-num-filled !h-11 !w-11 !text-lg">{i + 1}</span>
-              <h3 className="display mt-4 text-xl text-paper">{str(s.title)}</h3>
-              {str(s.detail) ? <p className="mt-2 text-sm text-navy-200">{str(s.detail)}</p> : null}
+              <h3 className="display mt-4 text-xl on-ground">{str(s.title)}</h3>
+              {str(s.detail) ? <p className="mt-2 text-sm on-ground-soft">{str(s.detail)}</p> : null}
             </div>
           ))}
         </InView>
@@ -218,8 +219,8 @@ function KeyList({
         <li key={i} className="rise flex gap-4" style={{ "--delay": `${300 + i * 70}ms` } as React.CSSProperties}>
           <span className="callout-num callout-num-filled mt-0.5">{i + 1}</span>
           <span>
-            <span className="display block text-lg text-paper">{str(k.label)}</span>
-            <span className="text-sm text-navy-200">{str(k.detail)}</span>
+            <span className="display block text-lg on-ground">{str(k.label)}</span>
+            <span className="text-sm on-ground-soft">{str(k.detail)}</span>
           </span>
         </li>
       ))}
@@ -356,9 +357,65 @@ export function ProgrammeStages({ data }: SectionProps) {
 
 /* ------------------------------------------------------------ news panel --- */
 
-export function NewsPanel({ data }: SectionProps) {
-  const items = rows(data.items);
-  if (!items.length) return null;
+/** The shape typed inline into a block, and the shape the notice board publishes. */
+interface PanelNotice {
+  title: string;
+  kind: string;
+  date: string;
+  body: string;
+  href: string;
+  pinned: boolean;
+  file: { url: string; filename: string; size: number } | null;
+}
+
+const KB = 1024;
+
+/** "1.4 MB" — so a parent on mobile data knows the cost before tapping. */
+function fileSize(bytes: number): string {
+  if (!bytes) return "";
+  if (bytes < KB * KB) return `${Math.max(1, Math.round(bytes / KB))} KB`;
+  return `${(bytes / (KB * KB)).toFixed(1)} MB`;
+}
+
+export function NewsPanel({ data, site }: SectionProps) {
+  const inline = rows(data.items);
+
+  // `source` post-dates this block, so a section saved before the notice board
+  // existed has no value for it. Absent means whatever that block already had:
+  // a filled list keeps printing, an empty one takes the board.
+  const source = str(data.source) || (inline.length ? "manual" : "board");
+
+  const items: PanelNotice[] =
+    source === "manual"
+      ? inline.map((n) => ({
+          title: str(n.title),
+          kind: str(n.kind),
+          date: str(n.date),
+          body: str(n.body),
+          href: str(n.href),
+          pinned: false,
+          file: null,
+        }))
+      : liveNotices(site, {
+          kinds: rows(data.kinds).map((k) => str(k.kind)),
+          limit: num(data.limit, 0),
+        }).map((n) => ({
+          title: n.title,
+          kind: n.kind,
+          date: n.date,
+          body: n.body,
+          href: n.href,
+          pinned: n.pinned,
+          file: n.file ? { url: n.file.url, filename: n.file.filename, size: n.file.size } : null,
+        }));
+
+  const empty = str(data.emptyText);
+  const ctas = links(data.ctas);
+
+  // A board with nothing current on it says so rather than vanishing: a parent
+  // who came looking for notices needs to be told they have all lapsed, not
+  // left wondering whether the page failed to load. Left blank, it vanishes.
+  if (!items.length && !(source === "board" && empty)) return null;
 
   return (
     <Plate tone="dark">
@@ -367,40 +424,71 @@ export function NewsPanel({ data }: SectionProps) {
           {str(data.plateTitle)}
         </TitleBand>
       ) : null}
-      <ul className="divide-y-2 divide-navy-700">
-        {items.map((n, i) => {
-          const date = str(n.date);
-          const href = str(n.href);
-          const parsed = date ? new Date(date) : null;
-          const readable =
-            parsed && !Number.isNaN(parsed.getTime())
-              ? parsed.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-              : date;
 
-          return (
-            <li key={i} className="p-5">
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                {str(n.kind) ? <span className="chart-label text-saffron">{str(n.kind)}</span> : null}
-                {readable ? (
-                  <time dateTime={date} className="chart-label tabular text-navy-300">
-                    {readable}
-                  </time>
+      {items.length ? (
+        <ul className="divide-y-2 divide-navy-700">
+          {items.map((n, i) => {
+            const parsed = n.date ? new Date(n.date) : null;
+            const readable =
+              parsed && !Number.isNaN(parsed.getTime())
+                ? parsed.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                : n.date;
+
+            return (
+              <li key={`${n.title}-${i}`} className="p-5">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  {n.kind ? <span className="chart-label on-ground-accent">{n.kind}</span> : null}
+                  {readable ? (
+                    <time dateTime={n.date} className="chart-label tabular on-ground-faint">
+                      {readable}
+                    </time>
+                  ) : null}
+                  {/* Named, not merely coloured — the marker has to survive
+                      greyscale and a screen reader. */}
+                  {n.pinned ? (
+                    <span className="chart-label on-ground-accent border border-current px-1.5">Pinned</span>
+                  ) : null}
+                </div>
+
+                <h3 className="display mt-1.5 text-lg on-ground">
+                  {n.href ? (
+                    <Link href={n.href} className="hover-accent">
+                      {n.title}
+                    </Link>
+                  ) : (
+                    n.title
+                  )}
+                </h3>
+
+                {n.body ? <p className="mt-1 text-sm on-ground-soft">{n.body}</p> : null}
+
+                {n.file ? (
+                  <a
+                    href={n.file.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="chart-label on-ground-accent mt-2.5 inline-flex items-center gap-2 underline underline-offset-2"
+                  >
+                    <Icon name="arrow" size={13} />
+                    {n.file.filename || "Open the attachment"}
+                    {fileSize(n.file.size) ? (
+                      <span className="tabular on-ground-faint">{fileSize(n.file.size)}</span>
+                    ) : null}
+                  </a>
                 ) : null}
-              </div>
-              <h3 className="display mt-1.5 text-lg text-paper">
-                {href ? (
-                  <Link href={href} className="hover:text-saffron">
-                    {str(n.title)}
-                  </Link>
-                ) : (
-                  str(n.title)
-                )}
-              </h3>
-              {str(n.body) ? <p className="mt-1 text-sm text-navy-200">{str(n.body)}</p> : null}
-            </li>
-          );
-        })}
-      </ul>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="p-5 text-sm on-ground-soft">{empty}</p>
+      )}
+
+      {ctas.length ? (
+        <div className="keyline-ground border-t-2 p-5">
+          <Buttons items={ctas} />
+        </div>
+      ) : null}
     </Plate>
   );
 }
@@ -500,11 +588,11 @@ export function BlogList({ data, site }: SectionProps) {
           {posts.map((p) => (
             <li key={p.slug} className="py-4">
               <Link href={`/blog/${p.slug}`} className="group flex flex-wrap items-baseline gap-x-4">
-                <span className="display text-lg text-paper group-hover:text-saffron">{p.title}</span>
+                <span className="display text-lg on-ground group-accent">{p.title}</span>
                 {p.publishedAt ? (
                   <time
                     dateTime={new Date(p.publishedAt).toISOString()}
-                    className="chart-label tabular text-navy-300"
+                    className="chart-label tabular on-ground-faint"
                   >
                     {new Date(p.publishedAt).toLocaleDateString("en-IN", {
                       day: "2-digit",
@@ -514,7 +602,7 @@ export function BlogList({ data, site }: SectionProps) {
                   </time>
                 ) : null}
               </Link>
-              {p.excerpt ? <p className="mt-1 text-sm text-navy-200">{p.excerpt}</p> : null}
+              {p.excerpt ? <p className="mt-1 text-sm on-ground-soft">{p.excerpt}</p> : null}
             </li>
           ))}
         </ul>
@@ -524,7 +612,7 @@ export function BlogList({ data, site }: SectionProps) {
             <li key={p.slug}>
               <Link href={`/blog/${p.slug}`} className="plate group flex h-full flex-col overflow-hidden">
                 {p.cover ? (
-                  <span className="relative block aspect-[4/3] overflow-hidden bg-navy-900">
+                  <span className="relative block aspect-[4/3] overflow-hidden bg-navy-100">
                     <Img
                       src={thumb(p.cover)}
                       alt={p.coverAlt || p.title}

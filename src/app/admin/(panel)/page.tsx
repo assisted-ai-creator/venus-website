@@ -15,6 +15,7 @@ interface Overview {
     photos: number;
     posts: number;
     drafts: number;
+    notices: number;
     openEnquiries: number;
   };
   snapshotVersion: number;
@@ -44,6 +45,9 @@ const ACTION_WORDS: Record<string, string> = {
   "post.create": "wrote a post",
   "post.update": "edited a post",
   "post.delete": "deleted a post",
+  "notice.create": "posted a notice",
+  "notice.update": "edited a notice",
+  "notice.delete": "removed a notice",
   "settings.update": "changed settings",
   "settings.security.update": "changed who may reach the panel",
   "auth.login": "signed in",
@@ -123,6 +127,7 @@ export default function AdminHome() {
             <Stat label="Sections" value={data.counts.sections} href="/admin/pages" />
             <Stat label="Albums" value={data.counts.albums} href="/admin/albums" />
             <Stat label="Photographs" value={data.counts.photos} href="/admin/media" />
+            <Stat label="Notices" value={data.counts.notices} href="/admin/notices" />
             <Stat label="Published posts" value={data.counts.posts} href="/admin/blog" />
             <Stat label="Drafts" value={data.counts.drafts} href="/admin/blog" />
             <Stat label="New enquiries" value={data.counts.openEnquiries} href="/admin/enquiries" />
@@ -137,6 +142,13 @@ export default function AdminHome() {
                   </Link>{" "}
                   — every block on every page. Drag to reorder, switch a block off, move it to a
                   different page, or add a new one.
+                </li>
+                <li>
+                  <Link href="/admin/notices" className="font-semibold text-saffron underline">
+                    Notices
+                  </Link>{" "}
+                  — the notice board. Write one and it is on the home page and the Notices page
+                  immediately; attach a circular, or set a date for it to come down by itself.
                 </li>
                 <li>
                   <Link href="/admin/media" className="font-semibold text-saffron underline">

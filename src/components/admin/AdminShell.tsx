@@ -13,6 +13,7 @@ const NAV: { group: string; items: { href: string; label: string; ownerOnly?: bo
     items: [
       { href: "/admin", label: "Overview" },
       { href: "/admin/pages", label: "Pages & sections" },
+      { href: "/admin/notices", label: "Notices" },
       { href: "/admin/blog", label: "Blog" },
       { href: "/admin/albums", label: "Albums" },
       { href: "/admin/media", label: "Photographs" },
@@ -71,7 +72,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   if (checking) {
     return (
-      <div className="wall grid min-h-dvh place-items-center">
+      <div className="ground-ink grid min-h-dvh place-items-center">
         <p className="chart-label text-navy-200">Checking your session…</p>
       </div>
     );
@@ -79,7 +80,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   if (!user) {
     return (
-      <div className="wall grid min-h-dvh place-items-center p-6">
+      <div className="ground-ink grid min-h-dvh place-items-center p-6">
         <div className="max-w-md text-center">
           <p className="chart-label text-saffron">Signed out</p>
           <p className="mt-3 text-navy-100">Your session has ended. Sign in again to continue.</p>
@@ -96,7 +97,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <ToastProvider>
-      <div className="adm-shell wall">
+      <div className="adm-shell ground-ink">
         <aside className={`adm-side ${menuOpen ? "" : "hidden lg:block"}`}>
           <div className="border-b-2 border-navy-700 p-4">
             <Link href="/admin" className="inline-block text-paper">

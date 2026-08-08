@@ -87,7 +87,7 @@ export function SpecimenSlider({
       onBlurCapture={() => setPaused(false)}
       onKeyDown={onKey}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-navy-900 sm:aspect-[3/2]">
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-navy-100 sm:aspect-[3/2]">
         {slides.map((s, n) =>
           mounted.has(n) ? (
             /* eslint-disable-next-line @next/next/no-img-element */
