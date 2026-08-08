@@ -254,11 +254,22 @@ export function Dialog({
   size?: "lg" | "sm";
 }) {
   const panel = useRef<HTMLDivElement | null>(null);
+  const body = useRef<HTMLDivElement | null>(null);
+
+  // Held in a ref rather than read from the closure. Callers pass an inline
+  // `() => setOpen(false)`, so a dependency on it would re-run the effect on
+  // every parent render — and every keystroke in a field re-renders the parent.
+  // The effect below moves focus when it runs, so that would have dragged the
+  // caret out of the field being typed into and onto the Close button.
+  const close = useRef(onClose);
+  useEffect(() => {
+    close.current = onClose;
+  });
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") close.current();
       if (e.key !== "Tab" || !panel.current) return;
 
       // Focus stays inside the dialog while it is open.
@@ -280,13 +291,20 @@ export function Dialog({
     document.addEventListener("keydown", onKey);
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    panel.current?.querySelector<HTMLElement>("button, input, [tabindex]")?.focus();
+
+    // The first field of the form, not the header's Close button: opening
+    // "Write a notice" should leave the cursor in Title, ready to type.
+    const target =
+      body.current?.querySelector<HTMLElement>(
+        'input:not([disabled]), textarea, select, [contenteditable="true"]'
+      ) ?? panel.current?.querySelector<HTMLElement>("button, [tabindex]");
+    target?.focus();
 
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previous;
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -310,7 +328,9 @@ export function Dialog({
             Close
           </Button>
         </header>
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">{children}</div>
+        <div ref={body} className="min-h-0 flex-1 overflow-y-auto p-4">
+          {children}
+        </div>
         {footer ? (
           <footer className="flex flex-none flex-wrap justify-end gap-2 border-t-2 border-navy-700 p-3">
             {footer}

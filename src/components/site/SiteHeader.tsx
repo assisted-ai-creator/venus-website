@@ -25,6 +25,8 @@ export function SiteHeader({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  /** Which mobile groups are expanded. The one holding the current page opens. */
+  const [expanded, setExpanded] = useState<string[]>([]);
   const navRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -38,7 +40,16 @@ export function SiteHeader({
       if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+
+    // The sheet covers the screen; the page behind it should not scroll under
+    // a thumb that misses a link.
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previous;
+    };
   }, [open]);
 
   useEffect(() => {
@@ -56,6 +67,17 @@ export function SiteHeader({
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   const session = school.admissionWindow.session;
+
+  /** Opening the sheet reveals where the reader already is. */
+  const openSheet = () => {
+    setExpanded(
+      nav.filter((i) => i.children?.length && isActive(i.href)).map((i) => i.label)
+    );
+    setOpen(true);
+  };
+
+  const toggleGroup = (label: string) =>
+    setExpanded((v) => (v.includes(label) ? v.filter((l) => l !== label) : [...v, label]));
 
   return (
     <header className="on-ink sticky top-0 z-50">
@@ -157,59 +179,137 @@ export function SiteHeader({
 
           <button
             type="button"
-            onClick={() => setOpen((v) => !v)}
+            onClick={openSheet}
             aria-expanded={open}
             aria-controls="mobile-nav"
             className="btn btn-ghost !px-3 !py-2 lg:hidden"
           >
-            <Icon name={open ? "close" : "menu"} size={18} />
-            <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
+            <Icon name="menu" size={18} />
+            <span className="sr-only">Open menu</span>
           </button>
         </div>
       </div>
 
-      {open ? (
-        <div
-          id="mobile-nav"
-          className="max-h-[calc(100dvh-7rem)] overflow-y-auto border-b-2 border-navy-700 bg-navy-900 lg:hidden"
-        >
-          <nav aria-label="Main, mobile" className="shell py-5">
-            <ul className="space-y-5">
-              {nav.map((item) => (
-                <li key={item.label}>
-                  <Link href={item.href} className="display block text-2xl text-paper">
-                    {item.label}
-                  </Link>
-                  {item.children?.length ? (
-                    <ul className="mt-2 space-y-1 border-l-2 border-navy-700 pl-4">
-                      {item.children.map((c) => (
-                        <li key={c.href}>
-                          <Link
-                            href={c.href}
-                            className="block py-1 text-[0.95rem] text-navy-200 transition-colors hover:text-saffron"
-                          >
-                            {c.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-            {school.registrationUrl && admissions.showRegister ? (
-              <a
-                href={school.registrationUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-primary mt-7 w-full"
-              >
-                Register{session ? ` for ${session}` : ""}
-              </a>
-            ) : null}
-          </nav>
+      {/*
+        Kept in the tree rather than mounted on open, so it can animate shut as
+        well as open. `inert` is what removes it from the tab order while it is
+        hidden — visibility alone would leave its links reachable.
+      */}
+      <div
+        id="mobile-nav"
+        data-open={open ? "true" : "false"}
+        inert={!open}
+        aria-hidden={!open}
+        className="nav-sheet lg:hidden"
+      >
+        <div className="flex-none border-b-2 border-navy-700">
+          <div className="shell flex items-center justify-between gap-6 py-3">
+            <Link href="/" className="text-paper" aria-label={`${school.name} — home`}>
+              <Wordmark />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="btn btn-ghost !px-3 !py-2"
+            >
+              <Icon name="close" size={18} />
+              <span className="sr-only">Close menu</span>
+            </button>
+          </div>
         </div>
-      ) : null}
+
+        <nav aria-label="Main, mobile" className="shell flex-1 py-6">
+          <ul>
+            {nav.map((item, i) => {
+              const isOpen = expanded.includes(item.label);
+
+              // A section page the submenu does not already name stays
+              // reachable: the row itself becomes a toggle, so without this
+              // there would be no way to reach /academics.
+              const children = item.children?.length
+                ? item.children.some((c) => c.href === item.href)
+                  ? item.children
+                  : [{ label: `${item.label} overview`, href: item.href }, ...item.children]
+                : null;
+
+              return (
+                <li
+                  key={item.label}
+                  className="nav-entry border-b border-navy-800"
+                  style={{ "--i": i } as React.CSSProperties}
+                >
+                  {children ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(item.label)}
+                        aria-expanded={isOpen}
+                        aria-controls={`nav-group-${i}`}
+                        className={`display flex w-full items-center justify-between gap-4 py-4 text-left text-2xl transition-colors ${
+                          isActive(item.href) ? "text-saffron" : "text-paper"
+                        }`}
+                      >
+                        {item.label}
+                        <Icon
+                          name="chevron"
+                          size={16}
+                          className={`flex-none transition-transform duration-300 ${
+                            isOpen ? "rotate-90" : ""
+                          }`}
+                        />
+                      </button>
+
+                      <div id={`nav-group-${i}`} data-open={isOpen ? "true" : "false"} className="nav-drawer">
+                        <div>
+                          <ul className="mb-4 space-y-0.5 border-l-2 border-navy-700 pl-4">
+                            {children.map((c) => (
+                              <li key={c.href}>
+                                <Link
+                                  href={c.href}
+                                  className="block py-2 text-[0.98rem] text-navy-200 transition-colors hover:text-saffron"
+                                >
+                                  {c.label}
+                                  {c.note ? (
+                                    <span className="chart-label mt-0.5 block text-[0.62rem] text-navy-300 opacity-70">
+                                      {c.note}
+                                    </span>
+                                  ) : null}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      aria-current={isActive(item.href) ? "page" : undefined}
+                      className={`display block py-4 text-2xl transition-colors ${
+                        isActive(item.href) ? "text-saffron" : "text-paper"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+
+          {school.registrationUrl && admissions.showRegister ? (
+            <a
+              href={school.registrationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nav-entry btn btn-primary mt-7 w-full"
+              style={{ "--i": nav.length } as React.CSSProperties}
+            >
+              Register{session ? ` for ${session}` : ""}
+            </a>
+          ) : null}
+        </nav>
+      </div>
     </header>
   );
 }

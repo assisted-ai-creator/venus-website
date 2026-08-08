@@ -40,6 +40,8 @@ export const school = {
   emails: {
     helpdesk: "helpdesk@venusworldschools.org",
     principal: "principal@venusworldschools.org",
+    /** Where the school asks applicants to send a resume. */
+    careers: "admin@venusworldschools.org",
   },
 
   hours: [

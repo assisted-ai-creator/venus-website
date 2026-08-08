@@ -3,6 +3,7 @@ import { Plate, TitleBand } from "@/components/chart/Plate";
 import { Icon } from "@/components/chart/Icon";
 import { PhotoGrid } from "@/components/gallery/PhotoGrid";
 import { thumb } from "@/lib/img";
+import { parseEmbed, type Embed } from "@/lib/embeds";
 import type { SiteAlbum } from "@/lib/site";
 import { Buttons, Img, Intro, SectionHeading, links, num, photo, rows, str } from "./parts";
 import type { SectionProps } from "./types";
@@ -162,8 +163,11 @@ export function ImagePlate({ data }: SectionProps) {
 
 export function VideoPanel({ data }: SectionProps) {
   const videos = rows(data.videos)
-    .map((v) => ({ title: str(v.title), youtubeId: str(v.youtubeId).trim() }))
-    .filter((v) => v.youtubeId);
+    // The field is named for an id but a pasted watch address is what usually
+    // arrives, so both are read.
+    .map((v) => ({ title: str(v.title), embed: parseEmbed(str(v.youtubeId)) }))
+    .filter((v): v is { title: string; embed: Embed } => v.embed?.provider === "youtube")
+    .map((v) => ({ title: v.title, youtubeId: v.embed.id }));
 
   return (
     <Plate tone="dark">
@@ -208,5 +212,116 @@ export function VideoPanel({ data }: SectionProps) {
         ) : null}
       </div>
     </Plate>
+  );
+}
+
+/* ------------------------------------------------------------ embed panel --- */
+
+const EMBED_COLUMNS: Record<string, string> = {
+  "1": "",
+  "2": "sm:grid-cols-2",
+  "3": "sm:grid-cols-2 lg:grid-cols-3",
+};
+
+/** Reels are shot portrait; films and posts are not. */
+const EMBED_SHAPE: Record<Embed["shape"], string> = {
+  landscape: "aspect-video",
+  portrait: "aspect-[9/16]",
+};
+
+const PROVIDER_LABEL: Record<Embed["provider"], string> = {
+  youtube: "Watch on YouTube",
+  instagram: "Open on Instagram",
+};
+
+/**
+ * Films and reels, wherever the school wants them.
+ *
+ * Each entry is one pasted address. An address that is not a YouTube film or
+ * an Instagram reel or post is printed as a plain link rather than framed:
+ * the school can put anything in the field, but only these two hosts are ever
+ * loaded into the page.
+ */
+export function EmbedPanel({ data }: SectionProps) {
+  const items = rows(data.items)
+    .map((v) => ({
+      url: str(v.url).trim(),
+      title: str(v.title),
+      caption: str(v.caption),
+      embed: parseEmbed(str(v.url)),
+    }))
+    .filter((v) => v.url);
+
+  if (!items.length) return null;
+
+  const cols = EMBED_COLUMNS[str(data.columns, "2")] ?? EMBED_COLUMNS["2"];
+  const heading = str(data.heading);
+
+  return (
+    <div>
+      {heading || str(data.intro) ? (
+        <div className="mb-8">
+          <SectionHeading>{heading}</SectionHeading>
+          <Intro>{str(data.intro)}</Intro>
+        </div>
+      ) : null}
+
+      <ul className={`grid gap-6 ${cols}`}>
+        {items.map((item, i) => (
+          <li key={`${item.url}-${i}`}>
+            <figure className="plate overflow-hidden">
+              {item.embed ? (
+                <div
+                  className={`${EMBED_SHAPE[item.embed.shape]} w-full overflow-hidden border-b-2 border-ink bg-navy-100`}
+                >
+                  <iframe
+                    src={item.embed.src}
+                    title={item.title || (item.embed.provider === "youtube" ? "School film" : "School reel")}
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    scrolling="no"
+                    className="h-full w-full border-0"
+                  />
+                </div>
+              ) : (
+                <div className="border-b-2 border-ink p-5">
+                  <p className="chart-label text-ink-soft">Not a YouTube or Instagram address</p>
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1.5 block break-all text-sm underline"
+                  >
+                    {item.url}
+                  </a>
+                </div>
+              )}
+
+              {item.title || item.caption || item.embed ? (
+                <figcaption className="px-4 py-3">
+                  {item.title ? <span className="display block text-lg">{item.title}</span> : null}
+                  {item.caption ? (
+                    <span className="mt-0.5 block text-sm text-ink-soft">{item.caption}</span>
+                  ) : null}
+                  {item.embed ? (
+                    <a
+                      href={item.embed.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="chart-label mt-2 inline-flex items-center gap-1.5 text-ink-soft transition-colors hover:text-ink"
+                    >
+                      {PROVIDER_LABEL[item.embed.provider]}
+                      <Icon name="arrow" size={12} />
+                    </a>
+                  ) : null}
+                </figcaption>
+              ) : null}
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

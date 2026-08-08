@@ -13,27 +13,41 @@
 @layer components {
   /* --- Shell ----------------------------------------------------------- */
 
+  /*
+   * The sidebar is fixed, so it is out of flow and cannot hold a grid column
+   * open for itself. The working surface is inset by the same width instead.
+   */
   .adm-shell {
-    display: grid;
+    --adm-side-width: 17.5rem;
     min-height: 100dvh;
-    grid-template-columns: 1fr;
+  }
+
+  /* Full-height, so the navy column runs to the bottom of the screen whatever
+     the page beside it does. A flex column, so the nav takes up the slack and
+     holds the account block against the foot. */
+  .adm-side {
+    position: fixed;
+    /* Below lg it is a sheet over the working surface rather than a column
+       beside it: opening the menu should not push the page down. */
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background-color: var(--color-navy-950);
+    border-right: var(--keyline) solid var(--color-navy-700);
   }
 
   @media (min-width: 1024px) {
-    .adm-shell {
-      grid-template-columns: 17.5rem 1fr;
+    .adm-side {
+      inset: 0 auto 0 0;
+      width: var(--adm-side-width);
     }
-  }
 
-  .adm-side {
-    position: sticky;
-    top: 0;
-    align-self: start;
-    max-height: 100dvh;
-    overflow-y: auto;
-    background-color: var(--color-navy-950);
-    border-right: var(--keyline) solid var(--color-navy-700);
-    z-index: 30;
+    .adm-main {
+      padding-left: var(--adm-side-width);
+    }
   }
 
   .adm-nav-link {

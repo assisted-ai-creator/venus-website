@@ -151,6 +151,113 @@ export const facilities: Facility[] = [
   },
 ];
 
+/**
+ * "Why Venus World Schools" — the six points the school itself leads with,
+ * reproduced from its own home page. Worded as the school words them; the
+ * detail lines below each one are drawn from the disclosure filing, not
+ * written for effect.
+ */
+export const whyPoints = [
+  {
+    title: "Highly qualified and trained staff to impart quality education",
+    detail: "34 teachers — 15 TGT, 17 PRT and 6 NTT — at a teacher–section ratio of 1 : 1.5.",
+  },
+  {
+    title: "Classes for speech, drama, music, dance and eurhythmics",
+    detail: "Performing arts run as timetabled classes, not as an after-school club.",
+  },
+  {
+    title: "CCTV surveillance to add to the safety of our children",
+    detail: "Monitored across the campus.",
+  },
+  { title: "Qualified and trained sports coaches", detail: "A house system, with competition through the year." },
+  {
+    title:
+      "Play area with state-of-the-art play equipment certified by International Standards to guarantee safety of our children",
+    detail: "",
+  },
+  {
+    title: "Smart Classrooms provided with LCD projectors",
+    detail: "All 35 classrooms, 48 sq m each.",
+  },
+] as const;
+
+/**
+ * The affiliation record.
+ *
+ * CBSE requires an affiliated school to publish these, and they are the only
+ * numbers by which a parent can check that a school is what it says it is.
+ * Every value comes from the school's own Mandatory Public Disclosure.
+ */
+export const affiliation = {
+  standfirst:
+    "Venus World Schools is affiliated to the Central Board of Secondary Education. The school's management records the affiliation as the result of hard work and team effort, and thanks the parent body for its support.",
+  note: "These are the figures a parent can check the school against. They are reproduced from the school's own Mandatory Public Disclosure filing, which is published in full on this site.",
+};
+
+/**
+ * Achievements.
+ *
+ * Two different things sit under this heading on the school's own site: the
+ * Chairman's public honours, and what the children have done. They are kept
+ * apart here rather than run into one list.
+ */
+export const achievements = {
+  school: [
+    {
+      title: "India Book of Records — rope skipping",
+      date: "9 February 2024",
+      detail:
+        "52,32,480 cumulative skips across 100 days, and 1,72,168 skips recorded in a single minute.",
+    },
+    {
+      title: "Class X, 2025–26",
+      date: "",
+      detail: "A 97.22% pass, from 72 students registered for the board examination.",
+    },
+    {
+      title: "Ek Mutthi Anaj",
+      date: "",
+      detail:
+        "Grain gathered by the children each year and given to orphanages — the school's standing community collection.",
+    },
+  ],
+  /**
+   * The Chairman's honours, as the school lists them. The school's own page
+   * adds "other 11 various awards" without naming them, so that count is
+   * carried as it stands rather than padded out.
+   */
+  chairman: {
+    name: "Hon. Shri Pandurang Aabaji Raut",
+    role: "Chairman",
+    unnamedCount: 11,
+  },
+};
+
+/**
+ * Teaching and office vacancies, as the school advertises them. Reproduced
+ * from its own Career page; the school edits this in the panel thereafter.
+ */
+export const careers = {
+  standfirst:
+    "Venus World Schools is looking for sincere, eligible candidates who love children and can manage a class well. Applications are welcome from teachers and from office staff.",
+  openings: [
+    {
+      title: "Teachers — Pre-Primary and Standards I, II and III",
+      detail: "Graduate with D.Ed. or B.Ed.",
+    },
+    { title: "Office staff", detail: "Applications are accepted on an ongoing basis." },
+  ],
+  requirements: [
+    "Graduate with D.Ed. / B.Ed.",
+    "Strong English communication",
+    "In-depth subject knowledge",
+    "Computer proficiency",
+    "All education must be in the English medium",
+  ],
+  advantage: "Post-graduation, or previous experience in a CBSE school, is an advantage.",
+};
+
 export const news: NewsItem[] = [
   {
     slug: "admissions-2026-27",

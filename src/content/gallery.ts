@@ -128,12 +128,14 @@ export const albums: Album[] = [
   },
 ];
 
+/**
+ * The two films the school publishes on its own channel, @venusworldschools.
+ * Both are titled only "Venus World Schools" on YouTube, so the titles here
+ * describe what each one is rather than repeating the school's name twice.
+ */
 export const videos: VideoItem[] = [
-  {
-    title: "Venus World Schools — school channel",
-    youtubeId: "",
-    date: "",
-  },
+  { title: "The school on film", youtubeId: "p-_Qle4l3tI", date: "" },
+  { title: "Around the campus", youtubeId: "fzXXYuDl2MY", date: "" },
 ];
 
 export const getAlbum = (slug: string) => albums.find((a) => a.slug === slug);

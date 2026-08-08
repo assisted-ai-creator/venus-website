@@ -26,7 +26,7 @@ import {
   ProfileCards,
   BlogList,
 } from "./Lists";
-import { GalleryGrid, PhotoStrip, ImagePlate, VideoPanel } from "./Media";
+import { GalleryGrid, PhotoStrip, ImagePlate, VideoPanel, EmbedPanel } from "./Media";
 import { ContactPanel, PhonePanel, MapPanel, EnquiryPanel } from "./Contact";
 import type { SectionProps } from "./types";
 
@@ -56,6 +56,7 @@ const RENDERERS: Record<string, (props: SectionProps) => ReactNode> = {
   photoStrip: PhotoStrip,
   imagePlate: ImagePlate,
   videoPanel: VideoPanel,
+  embedPanel: EmbedPanel,
   contactPanel: ContactPanel,
   phonePanel: PhonePanel,
   mapPanel: MapPanel,

@@ -1,3 +1,5 @@
+import { school } from "@/content/school";
+
 export interface NavItem {
   label: string;
   href: string;
@@ -14,6 +16,7 @@ export const navigation: NavItem[] = [
       { label: "Principal's message", href: "/about/principals-message" },
       { label: "Vision & mission", href: "/about/vision-mission" },
       { label: "Our management", href: "/about/management" },
+      { label: "Affiliation", href: "/about/affiliation", note: `CBSE · ${school.affiliationNo}` },
       {
         label: "Mandatory public disclosure",
         href: "/about/disclosure",
@@ -36,9 +39,25 @@ export const navigation: NavItem[] = [
     ],
   },
   { label: "Admissions", href: "/admissions" },
+  { label: "Achievements", href: "/achievements" },
   // The returning parent's entry point — the one menu item that is not aimed
   // at a family still deciding.
   { label: "Notices", href: "/notices" },
-  { label: "Gallery", href: "/gallery" },
-  { label: "Contact", href: "/contact" },
+  {
+    label: "Gallery",
+    href: "/gallery",
+    children: [
+      { label: "Photographs", href: "/gallery", note: "Albums by category" },
+      { label: "Video gallery", href: "/gallery/videos", note: "Films and reels" },
+    ],
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+    children: [
+      { label: "Contact the school", href: "/contact" },
+      { label: "Blog", href: "/blog" },
+      { label: "Careers", href: "/careers", note: "Teaching and office posts" },
+    ],
+  },
 ];

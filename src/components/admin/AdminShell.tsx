@@ -99,14 +99,21 @@ export function AdminShell({ children }: { children: ReactNode }) {
     <ToastProvider>
       <div className="adm-shell ground-ink">
         <aside className={`adm-side ${menuOpen ? "" : "hidden lg:block"}`}>
-          <div className="border-b-2 border-navy-700 p-4">
-            <Link href="/admin" className="inline-block text-paper">
-              <Wordmark />
-            </Link>
+          <div className="flex-none border-b-2 border-navy-700 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <Link href="/admin" className="inline-block text-paper">
+                <Wordmark />
+              </Link>
+              {/* The sheet covers the bar it was opened from, so it carries its
+                  own way out. */}
+              <Button size="sm" className="lg:hidden" onClick={() => setMenuOpen(false)}>
+                Close
+              </Button>
+            </div>
             <p className="chart-label mt-3 text-saffron">Admin panel</p>
           </div>
 
-          <nav aria-label="Panel" className="space-y-6 p-3">
+          <nav aria-label="Panel" className="flex-1 space-y-6 p-3">
             {NAV.map((group) => {
               const items = group.items.filter((i) => !i.ownerOnly || user.role === "owner");
               if (!items.length) return null;
@@ -131,7 +138,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             })}
           </nav>
 
-          <div className="border-t-2 border-navy-700 p-4">
+          <div className="flex-none border-t-2 border-navy-700 p-4">
             <p className="text-sm text-paper">{user.name}</p>
             <p className="chart-label text-navy-300">{user.role}</p>
             <div className="mt-3 flex flex-wrap gap-2">

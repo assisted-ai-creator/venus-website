@@ -450,6 +450,27 @@ export const SECTIONS: SectionDef[] = [
   },
 
   {
+    type: "embedPanel",
+    name: "Videos & reels",
+    description: "YouTube films and Instagram reels, pasted in as addresses and placed on any page.",
+    group: "Media",
+    fields: [
+      text("heading", "Heading"),
+      area("intro", "Introduction"),
+      select("columns", "Columns", [["1", "One"], ["2", "Two"], ["3", "Three"]], { width: "half" }),
+      list("items", "Films and reels", [
+        text("url", "Address", {
+          placeholder: "https://www.instagram.com/reel/… or https://youtu.be/…",
+          help: "Paste the whole address from the share button. YouTube films, Shorts, Instagram reels and posts all work.",
+        }),
+        text("title", "Title"),
+        area("caption", "Caption", { rows: 2 }),
+      ], { addLabel: "Add a film or reel", itemLabel: "title" }),
+    ],
+    defaults: { heading: "", intro: "", columns: "2", items: [] },
+  },
+
+  {
     type: "feesPanel",
     name: "Fees",
     description: "One-time charges, instalments and the annual total.",

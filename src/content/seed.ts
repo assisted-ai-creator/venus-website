@@ -21,6 +21,10 @@ import {
   facilities,
   news,
   boardResults,
+  whyPoints,
+  affiliation,
+  achievements,
+  careers,
 } from "./pages";
 import { albums, heroSlides, videos } from "./gallery";
 import { navigation } from "../components/site/nav";
@@ -236,6 +240,19 @@ const homePage: SitePage = {
       plateNumber: "KEY A–J",
       items: facilities.map((f) => ({ name: f.name, deva: f.deva ?? "", detail: f.detail })),
       layout: { ground: "wall", column: "full", anchor: "facilities" },
+    }),
+
+    // The six points the school leads with on its own site, in its own words.
+    // The detail under each is the filed figure that backs it, so the claim
+    // and the evidence sit together rather than on separate pages.
+    section("numberedList", {
+      plateTitle: "Why Venus World Schools, Hadapsar",
+      plateNumber: "KEY 1–6",
+      marker: "numbers",
+      columns: "2",
+      items: whyPoints.map((p) => ({ title: p.title, detail: p.detail })),
+      note: "",
+      layout: { ground: "wall", column: "full" },
     }),
 
     section("ctaBand", {
@@ -763,11 +780,248 @@ const galleryPage: SitePage = {
       plateTitle: "Video gallery",
       plateNumber: "REEL",
       intro:
-        "Individual videos have not been catalogued on this site yet. The school's films are published on its YouTube channel, and each one added in the panel appears here automatically.",
+        "The school's films are published on its YouTube channel, and each one added in the panel appears here automatically.",
       videos: videos.filter((v) => v.youtubeId).map((v) => ({ title: v.title, youtubeId: v.youtubeId })),
       channelUrl: school.social.youtube,
       channelLabel: "Open the school channel",
       layout: { ground: "wall-dense", column: "full" },
+    }),
+  ],
+};
+
+/**
+ * Video gallery.
+ *
+ * Its own page because the school's site has one, and because the block used
+ * here takes Instagram reels as well as YouTube films — so a reel posted from
+ * a phone can be put on the site without anything else changing.
+ */
+const videoGalleryPage: SitePage = {
+  id: "seed_gallery_videos",
+  slug: "gallery/videos",
+  title: "Video gallery",
+  navLabel: "Video gallery",
+  showInNav: true,
+  status: "published",
+  isSystem: false,
+  seo: {
+    description:
+      "Films and reels from Venus World Schools, Manjari, Pune — published on the school's own YouTube channel.",
+  },
+  header: {
+    variant: "sheet",
+    title: "Video gallery",
+    standfirst: "Films from the school's channel, and reels as the school posts them.",
+  },
+  sections: [
+    section("embedPanel", {
+      heading: "",
+      intro: "",
+      columns: "2",
+      items: videos
+        .filter((v) => v.youtubeId)
+        .map((v) => ({
+          url: `https://www.youtube.com/watch?v=${v.youtubeId}`,
+          title: v.title,
+          caption: "",
+        })),
+      layout: { ground: "wall-dense", column: "full" },
+    }),
+    section("ctaBand", {
+      heading: "More on the school's channel",
+      intro:
+        "Everything the school films is published there first. An Instagram reel can be added to this page in the panel by pasting its address.",
+      facts: [],
+      ctas: [{ label: "Open the school channel", href: school.social.youtube, style: "primary" }],
+      layout: { ground: "amber", column: "full" },
+    }),
+  ],
+};
+
+/**
+ * Affiliation.
+ *
+ * The school's own site carries an affiliation page that states the fact but
+ * prints none of the numbers. The numbers are the whole point of the page for
+ * a parent checking a school, so they are set out here and the full return is
+ * linked rather than duplicated.
+ */
+const affiliationPage: SitePage = {
+  id: "seed_about_affiliation",
+  slug: "about/affiliation",
+  title: "Affiliation",
+  navLabel: "Affiliation",
+  showInNav: true,
+  status: "published",
+  isSystem: false,
+  seo: {
+    description: `Venus World Schools is affiliated to CBSE under affiliation no. ${school.affiliationNo}, school code ${school.schoolCode}.`,
+  },
+  header: {
+    variant: "sheet",
+    title: "Affiliation",
+    standfirst: affiliation.standfirst,
+    meta: [
+      { label: "Board", value: school.board },
+      { label: "Affiliation no.", value: school.affiliationNo },
+      { label: "School code", value: school.schoolCode },
+    ],
+  },
+  sections: [
+    section("factTable", {
+      plateTitle: "The affiliation record",
+      plateNumber: "PLATE E",
+      rows: [
+        { label: "Board", value: "Central Board of Secondary Education" },
+        { label: "Affiliation no.", value: school.affiliationNo },
+        { label: "School code", value: school.schoolCode },
+        { label: "Classes affiliated", value: "Playgroup to Standard X" },
+        { label: "Established", value: String(school.established) },
+        { label: "Principal", value: `${school.record.principal}, ${school.record.principalQualification}` },
+      ],
+      layout: { ground: "wall-dense", column: "left" },
+    }),
+    section("prose", {
+      heading: "How to check this",
+      standfirst: affiliation.note,
+      body:
+        "<p>CBSE requires every affiliated school to publish a Mandatory Public Disclosure and to keep it current. Ours carries the staff numbers, the infrastructure, the fee structure and the board results, and it is reproduced in full on this site.</p>",
+      tone: "dark",
+      ctas: [{ label: "Read the full disclosure", href: "/about/disclosure", style: "ghost" }],
+      layout: { ground: "wall-dense", column: "right" },
+    }),
+  ],
+};
+
+/**
+ * Achievements.
+ *
+ * The children's record and the Chairman's honours are two different things,
+ * so they are two blocks rather than one list. The Chairman's honours are the
+ * five the school names, plus the count it gives without naming them — carried
+ * as a count rather than invented into eleven titles.
+ */
+const achievementsPage: SitePage = {
+  id: "seed_achievements",
+  slug: "achievements",
+  title: "Achievements",
+  navLabel: "Achievements",
+  showInNav: true,
+  status: "published",
+  isSystem: false,
+  seo: {
+    description:
+      "Achievements at Venus World Schools, Manjari, Pune — an India Book of Records rope-skipping entry, a 97.22% Class X pass, and the honours held by the school's Chairman.",
+  },
+  header: {
+    variant: "sheet",
+    title: "Achievements",
+    standfirst: "What the children have done, and the public honours held by the school's Chairman.",
+  },
+  sections: [
+    section("numberedList", {
+      plateTitle: "The school's record",
+      plateNumber: "PLATE F",
+      marker: "numbers",
+      columns: "1",
+      items: achievements.school.map((a) => ({
+        title: a.date ? `${a.title} · ${a.date}` : a.title,
+        detail: a.detail,
+      })),
+      note: "",
+      layout: { ground: "wall-dense", column: "full" },
+    }),
+    section("profileCards", {
+      heading: "Honours held by the Chairman",
+      cards: [
+        {
+          name: achievements.chairman.name,
+          role: achievements.chairman.role,
+          plateNumber: "PLATE G",
+          src: "",
+          positions: management[0].positions.map((t) => ({ text: t })),
+          honours: [
+            ...management[0].honours.map((t) => ({ text: t })),
+            { text: `and ${achievements.chairman.unnamedCount} further awards` },
+          ],
+        },
+      ],
+      layout: { ground: "wall", column: "full" },
+    }),
+    // Deliberately not a notice-board block. The two standing achievements are
+    // already on the board, so filtering it to "Achievement" here would print
+    // the same two entries a second time directly under the plate above.
+    section("ctaBand", {
+      heading: "As the school posts them",
+      intro:
+        "Results, records and prizes are announced on the notice board as they happen. This page carries the standing record.",
+      facts: [],
+      ctas: [{ label: "The notice board", href: "/notices", style: "primary" }],
+      layout: { ground: "amber", column: "full" },
+    }),
+  ],
+};
+
+/**
+ * Careers.
+ *
+ * Reproduced from the school's own Career page. The resume address is not the
+ * helpdesk one — the school routes applications elsewhere — so it is carried
+ * separately in `school.emails` rather than assumed.
+ */
+const careersPage: SitePage = {
+  id: "seed_careers",
+  slug: "careers",
+  title: "Careers",
+  navLabel: "Careers",
+  showInNav: true,
+  status: "published",
+  isSystem: false,
+  seo: {
+    description:
+      "Teaching and office vacancies at Venus World Schools, Manjari, Pune. Send a resume to admin@venusworldschools.org.",
+  },
+  header: {
+    variant: "sheet",
+    title: "Careers",
+    standfirst: careers.standfirst,
+  },
+  sections: [
+    section("numberedList", {
+      plateTitle: "Current openings",
+      plateNumber: "PLATE H",
+      marker: "numbers",
+      columns: "1",
+      items: careers.openings.map((o) => ({ title: o.title, detail: o.detail })),
+      note: "",
+      layout: { ground: "wall-dense", column: "left" },
+    }),
+    section("numberedList", {
+      plateTitle: "What is asked for",
+      plateNumber: "PLATE I",
+      marker: "none",
+      columns: "1",
+      items: careers.requirements.map((r) => ({ title: r, detail: "" })),
+      note: careers.advantage,
+      layout: { ground: "wall-dense", column: "right" },
+    }),
+    section("ctaBand", {
+      heading: "Applying",
+      intro: `Send a resume to ${school.emails.careers}. The office answers ${school.hours[0].time}, ${school.hours[0].days}.`,
+      facts: [
+        { label: "Resumes to", value: school.emails.careers },
+        { label: "General enquiries", value: school.emails.helpdesk },
+        { label: "Telephone", value: school.phones[0].number },
+      ],
+      ctas: [
+        {
+          label: "Email a resume",
+          href: `mailto:${school.emails.careers}?subject=${encodeURIComponent("Application — Venus World Schools")}`,
+          style: "primary",
+        },
+        { label: "Contact the school", href: "/contact", style: "ghost" },
+      ],
+      layout: { ground: "amber", column: "full" },
     }),
   ],
 };
@@ -893,15 +1147,19 @@ export const seedPages: SitePage[] = [
   messagePage("principals-message"),
   messagePage("vision-mission"),
   messagePage("management"),
+  affiliationPage,
   disclosurePage,
   academicsIndex,
   programmePage("pre-primary"),
   programmePage("primary"),
   programmePage("secondary"),
   admissionsPage,
+  achievementsPage,
   galleryPage,
+  videoGalleryPage,
   noticesPage,
   blogPage,
+  careersPage,
   contactPage,
 ];
 

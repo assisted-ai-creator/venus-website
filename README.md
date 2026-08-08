@@ -17,6 +17,13 @@ Cloudflare Workers, with D1, R2 and KV.
 - **Photographs and albums.** Upload once into a shared library, then use the
   same photograph in an album, on a page, or inside a post. Alt text is a
   first-class field, and the panel flags files that lack it.
+- **A notice board.** Dated notices with a kind, an optional link and an
+  optional PDF circular. Pin one to the top, or give it a date to come down by
+  itself. Written once under Notices and shown on the home page and `/notices`
+  together — there is no second place to update.
+- **Videos and reels.** A block that takes a pasted address — a YouTube film,
+  a Short, an Instagram reel or post — and frames it, on any page. Nothing is
+  loaded from anywhere else: an address on another host prints as a link.
 - **A blog.** Headings, sub-headings, bold, italics, underline, strike, lists,
   quotations, alignment, links, rules, photographs from the library and
   YouTube films — placed anywhere in the article.
@@ -114,9 +121,9 @@ cp .env.example .env.local     # fill in CMS_API_URL and CMS_BOOTSTRAP_TOKEN
 npm run cms:seed
 ```
 
-That writes 15 pages, 52 sections, 5 albums, the 16 reviewed photographs and
-the school's details — so the panel opens on the site exactly as it stands,
-not on a blank page.
+That writes 20 pages, 64 sections, 5 albums, 4 notices, the 16 reviewed
+photographs and the school's details — so the panel opens on the site exactly
+as it stands, not on a blank page.
 
 `npm run cms:seed` only fills gaps and is safe to re-run. Use
 `npm run cms:seed -- --replace` to wipe content and start over.

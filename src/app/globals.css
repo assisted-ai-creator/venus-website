@@ -780,3 +780,100 @@
     animation: none !important;
   }
 }
+
+/* ============================================================================
+   THE MOBILE NAVIGATION SHEET
+
+   A full-screen panel rather than a strip pushed under the header: on a phone
+   the menu is the whole task, and a list that scrolls the page behind it is
+   harder to read than one that owns the screen.
+
+   It stays mounted and is hidden with `visibility`, so it can animate out as
+   well as in. `inert` in the markup is what actually takes it out of the tab
+   order — visibility alone would leave it reachable mid-transition.
+   ========================================================================== */
+
+@layer components {
+  .nav-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background-color: var(--color-navy-950);
+    transition:
+      opacity 0.28s var(--ease-chart),
+      transform 0.28s var(--ease-chart),
+      visibility 0s;
+  }
+
+  /*
+   * `visibility` is what actually takes the closed sheet out of the picture —
+   * opacity alone would leave it swallowing taps. It switches instantly on the
+   * way in and waits for the fade on the way out, so the sheet is on screen
+   * for the whole of both animations.
+   */
+  .nav-sheet[data-open="false"] {
+    opacity: 0;
+    transform: translateY(-1.5rem);
+    visibility: hidden;
+    pointer-events: none;
+    transition-delay: 0s, 0s, 0.28s;
+  }
+
+  .nav-sheet[data-open="true"] {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  /* Entries arrive in reading order once the sheet itself has landed. */
+  .nav-sheet[data-open="true"] .nav-entry {
+    animation: nav-entry-in 0.42s var(--ease-chart) both;
+    animation-delay: calc(var(--i, 0) * 45ms + 70ms);
+  }
+
+  /*
+   * The submenu animates on grid rows, because a list of unknown length has no
+   * height to transition to. `0fr → 1fr` is that height, measured by the
+   * browser rather than guessed here.
+   */
+  .nav-drawer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s var(--ease-chart);
+  }
+
+  .nav-drawer[data-open="true"] {
+    grid-template-rows: 1fr;
+  }
+
+  .nav-drawer > div {
+    overflow: hidden;
+  }
+}
+
+@keyframes nav-entry-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-sheet,
+  .nav-drawer {
+    transition: none !important;
+  }
+
+  .nav-sheet[data-open="true"] .nav-entry {
+    animation: none !important;
+  }
+}

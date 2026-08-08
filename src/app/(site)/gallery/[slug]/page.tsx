@@ -2,10 +2,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSite } from "@/lib/content";
-import { albumBySlug } from "@/lib/site";
+import { albumBySlug, pageBySlug } from "@/lib/site";
 import { PageHeader } from "@/components/site/PageHeader";
+import { CmsPageView, cmsMetadata } from "@/components/site/CmsPage";
 import { PhotoGrid } from "@/components/gallery/PhotoGrid";
 import { Icon } from "@/components/chart/Icon";
+
+/**
+ * An album — or, where no album goes by that name, whatever page the panel has
+ * filed under Gallery. This route is matched before the catch-all, so without
+ * that second lookup a page created at gallery/videos would answer 404.
+ */
 
 interface Params {
   params: Promise<{ slug: string }>;
@@ -15,7 +22,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const site = await getSite();
   const album = albumBySlug(site, slug);
-  if (!album) return {};
+  if (!album) {
+    const page = pageBySlug(site, `gallery/${slug}`);
+    return page ? cmsMetadata(page, site) : {};
+  }
 
   return {
     title: album.title,
@@ -31,7 +41,11 @@ export default async function AlbumPage({ params }: Params) {
   const { slug } = await params;
   const site = await getSite();
   const album = albumBySlug(site, slug);
-  if (!album) notFound();
+  if (!album) {
+    const page = pageBySlug(site, `gallery/${slug}`);
+    if (!page || page.status !== "published") notFound();
+    return <CmsPageView page={page} site={site} />;
+  }
 
   const i = site.albums.findIndex((a) => a.slug === slug);
   const next = site.albums[(i + 1) % Math.max(site.albums.length, 1)];
