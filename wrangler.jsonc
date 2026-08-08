@@ -30,8 +30,12 @@
   //
   // A service binding rather than a URL: the request goes worker-to-worker
   // inside Cloudflare, so the API needs no public hostname, no route and no
-  // CORS, and it cannot be reached from the internet at all. Without this the
-  // site still runs, from the typed content layer committed in src/content.
+  // CORS of its own. Without this the site still runs, from the typed content
+  // layer committed in src/content.
+  //
+  // The binding does not by itself take the API off the internet; that is
+  // `workers_dev: false`, set in the backend's own config. With both in place
+  // the API is reachable only from this worker.
   "services": [
     {
       "binding": "CMS",
