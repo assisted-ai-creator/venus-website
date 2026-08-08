@@ -87,10 +87,9 @@ set for `SITE_API_KEY`.
 
 ### 2. Configure this repo
 
-In `wrangler.jsonc`, set:
-
-- `vars.CMS_API_URL` — the API worker's address
-- `d1_databases[0].database_id` — the same `venus-cms` database the API uses
+In `wrangler.jsonc`, set `vars.CMS_API_URL` to the API worker's address. The
+`venus-cms` database id is already filled in — it is the same database the API
+uses, so the panel can show the office its enquiries.
 
 Then set the secrets:
 
