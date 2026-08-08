@@ -153,17 +153,46 @@
   .ground-amber-deep,
   .ground-ink {
     position: relative;
+    --grid-size: 2.25rem;
+
+    /* Four layers, topmost first: the two grid rules, a veil, and the mark
+       the veil is there to fade.
+
+       The veil is how the watermark is made faint. A background layer has no
+       opacity of its own, and fading one with a pseudo-element would mean an
+       absolutely-positioned box sitting over content that is not itself
+       positioned — so the mark is printed at full strength and then buried
+       under a near-opaque wash of the ground's own colour. The grid stays
+       above the wash, and so keeps its measure.
+
+       A ground that sets no --mark-image leaves both slots at `none`. */
     background-image:
       linear-gradient(to right, var(--grid-ink) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-ink) 1px, transparent 1px);
-    background-size: 2.25rem 2.25rem;
+      linear-gradient(to bottom, var(--grid-ink) 1px, transparent 1px),
+      var(--mark-veil, none),
+      var(--mark-image, none);
+    background-size:
+      var(--grid-size) var(--grid-size),
+      var(--grid-size) var(--grid-size),
+      auto,
+      var(--mark-size, auto);
+    background-position: 0 0, 0 0, 0 0, var(--mark-position, 0 0);
+    background-repeat: repeat, repeat, no-repeat, no-repeat;
   }
 
-  /* The page itself: literal white under a faint blue grid. */
+  /* The page itself: literal white under a faint blue grid, with the school's
+     emblem watermarked into the sheet at about 4%. It bleeds off the right
+     edge and is centred vertically, so a short band shows a slice of it rather
+     than a clipped top. Under the grid, never over it. */
   .wall {
     --grid-ink: color-mix(in srgb, var(--color-navy-600) 11%, transparent);
     background-color: #ffffff;
     color: var(--color-ink);
+
+    --mark-image: url("/logo-mark.png");
+    --mark-veil: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95));
+    --mark-size: min(26rem, 48vw) auto;
+    --mark-position: right -3rem center;
 
     --on-ground: var(--color-ink);
     --on-ground-soft: var(--color-ink-soft);
@@ -173,8 +202,10 @@
     --plate-bg: #ffffff;
   }
 
+  /* A finer measure. Only the grid tightens — the watermark keeps its size,
+     which is why the grid is sized off a variable rather than restated here. */
   .wall-dense {
-    background-size: 0.75rem 0.75rem;
+    --grid-size: 0.75rem;
   }
 
   /* The section wash. Saffron keylines top and bottom so the band is a
