@@ -1,0 +1,45 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "venus-world-schools",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-03-25",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+
+  "vars": {
+    // The content API — the venus-admin-panel worker. Every page render reads
+    // the published site from it, and /admin proxies through it. Without this
+    // the site still runs, from the typed content layer committed in src/content.
+    "CMS_API_URL": "https://venus-admin-api.REPLACE_WITH_YOUR_SUBDOMAIN.workers.dev",
+
+    // Milliseconds a snapshot may be reused within one isolate. 0 keeps edits
+    // instant; raise it only if the read volume makes that worth collapsing.
+    "CMS_CACHE_MS": "0"
+  },
+
+  // Enquiries are written here before the notification email is attempted, so a
+  // mail outage never loses a parent's enquiry. This is the same database the
+  // content API uses, so the panel can show the office its enquiries.
+  //
+  // The schema is owned by the venus-admin-panel repo — create and migrate it
+  // there, then paste the same database_id here.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "venus-cms",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ]
+
+  // Secrets are NOT set here. Run:
+  //   wrangler secret put CMS_SITE_KEY      (must match SITE_API_KEY on the API)
+  //   wrangler secret put RESEND_API_KEY
+  //   wrangler secret put ENQUIRY_TO        (defaults to helpdesk@venusworldschools.org)
+  //   wrangler secret put ENQUIRY_FROM      (must be on a Resend-verified domain)
+}

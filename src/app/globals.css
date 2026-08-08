@@ -1,0 +1,611 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   VENUS WORLD SCHOOLS — "The Wall Chart"
+   The offset-printed Indian classroom chart, set in institutional blue and
+   saffron. Flat spot inks, thick keylines, numbered callouts on leader lines.
+
+   Component classes live in @layer components so Tailwind utilities written on
+   an element (lg:hidden, !px-3) always win over them.
+   ========================================================================== */
+
+@theme {
+  /* --- Inks. Oxford/federal blue is the ground; saffron is the callout ink. */
+  --color-ink: #0a1826;
+  --color-ink-soft: #24384c;
+
+  --color-navy-950: #001631;
+  --color-navy-900: #002147;
+  --color-navy-850: #04294f;
+  --color-navy-800: #06305f;
+  --color-navy-700: #0b4b8f;
+  --color-navy-600: #1663b0;
+  --color-navy-300: #8fb4dc;
+  --color-navy-200: #bed4ec;
+  --color-navy-100: #dce8f5;
+
+  --color-saffron: #ffab1f;
+  --color-saffron-deep: #d97d00;
+  /* Saffron on cream is 1.7:1 and saffron-deep only 2.6:1. This is the amber
+     that survives the paper ground — 5.7:1 — for any saffron-coded text or
+     glyph sitting on a plate. */
+  --color-amber-ink: #8a4b00;
+  --color-saffron-100: #ffeccb;
+
+  --color-paper: #f4efe3;
+  --color-paper-bright: #fbf8f1;
+  --color-paper-shade: #e6dfcd;
+
+  --color-verify: #1b6e4a;
+  --color-alert: #c8321e;
+
+  /* --- Faces */
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-label: var(--font-archivo-narrow), ui-sans-serif, system-ui, sans-serif;
+  --font-deva: var(--font-tiro), serif;
+
+  /* --- Chart measures */
+  --keyline: 2px;
+  --radius-plate: 2px;
+
+  --ease-chart: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  :root {
+    --gutter: clamp(1.25rem, 5vw, 4.5rem);
+    --plate-max: 78rem;
+    color-scheme: dark;
+  }
+
+  * {
+    min-width: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-navy-900);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* Focus: a saffron register mark, visible on every ground. */
+  :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--color-saffron);
+    outline-offset: 2px;
+    border-radius: 1px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* The wall behind the chart: a faint blueprint grid, printed not glowing. */
+  .wall {
+    position: relative;
+    background-color: var(--color-navy-900);
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in srgb, var(--color-navy-300) 7%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-navy-300) 7%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 2.25rem 2.25rem;
+  }
+
+  .wall-dense {
+    background-size: 0.75rem 0.75rem;
+  }
+
+  /* --- Type ------------------------------------------------------------ */
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    line-height: 0.94;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  .deva {
+    font-family: var(--font-deva);
+    line-height: 1.75;
+    font-weight: 400;
+  }
+
+  /* Chart labels: narrow, tracked, uppercase — printed beside a leader line. */
+  .chart-label {
+    font-family: var(--font-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .prose-chart {
+    max-width: 68ch;
+  }
+
+  .prose-chart p {
+    margin-block: 0 1.15em;
+  }
+
+  .prose-chart p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* --- Editor copy ------------------------------------------------------
+     Everything the panel's writing tools can emit, given the chart's
+     typography. Set on a plate the colours are inherited; set on the blue
+     ground the `.rich-on-wall` variant lifts them. */
+
+  .rich {
+    max-width: 68ch;
+    font-size: 1.05rem;
+  }
+
+  .rich > * + * {
+    margin-top: 1.15em;
+  }
+
+  .rich h2,
+  .rich h3,
+  .rich h4 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-top: 1.9em;
+    text-wrap: balance;
+  }
+
+  .rich h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+  .rich h3 {
+    font-size: clamp(1.25rem, 2.4vw, 1.55rem);
+  }
+  .rich h4 {
+    font-size: 1.1rem;
+  }
+
+  .rich :is(h2, h3, h4) + * {
+    margin-top: 0.6em;
+  }
+
+  .rich a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 600;
+  }
+
+  .rich :is(ul, ol) {
+    padding-left: 1.4em;
+  }
+
+  .rich ul {
+    list-style: square;
+  }
+  .rich ol {
+    list-style: decimal;
+  }
+
+  .rich li + li {
+    margin-top: 0.4em;
+  }
+
+  .rich li::marker {
+    color: var(--color-amber-ink);
+    font-weight: 700;
+  }
+
+  .rich blockquote {
+    border-left: var(--keyline) solid var(--color-saffron);
+    padding-left: 1.1em;
+    font-size: 1.15em;
+    line-height: 1.5;
+  }
+
+  .rich :is(img, video, iframe) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: var(--keyline) solid currentColor;
+    border-radius: var(--radius-plate);
+  }
+
+  .rich iframe {
+    aspect-ratio: 16 / 9;
+  }
+
+  .rich figure {
+    margin-block: 1.6em;
+  }
+
+  .rich figcaption {
+    font-family: var(--font-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.72rem;
+    margin-top: 0.6em;
+    opacity: 0.75;
+  }
+
+  .rich :is(code, pre) {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+    font-size: 0.9em;
+  }
+
+  .rich pre {
+    overflow-x: auto;
+    padding: 1em 1.15em;
+    border: var(--keyline) solid currentColor;
+  }
+
+  .rich table {
+    width: 100%;
+    border-collapse: collapse;
+    display: block;
+    overflow-x: auto;
+  }
+
+  .rich :is(th, td) {
+    border: 1px solid currentColor;
+    padding: 0.55em 0.8em;
+    text-align: left;
+  }
+
+  .rich th {
+    font-family: var(--font-label);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.78rem;
+  }
+
+  .rich hr {
+    border: 0;
+    height: 5px;
+    border-top: 1px solid currentColor;
+    border-bottom: 3px solid currentColor;
+    opacity: 0.4;
+    margin-block: 2em;
+  }
+
+  /* --- The plate: a sheet of chart stock, keylined, pinned to the wall --- */
+
+  .plate {
+    position: relative;
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    border: var(--keyline) solid var(--color-ink);
+    border-radius: var(--radius-plate);
+    box-shadow:
+      0 1px 0 0 color-mix(in srgb, var(--color-ink) 55%, transparent),
+      0 18px 34px -22px rgb(0 0 0 / 0.75);
+  }
+
+  /* Paper tooth — a very faint printed grain, never a gradient sheen. */
+  .plate::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0.5;
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      color-mix(in srgb, var(--color-ink) 9%, transparent) 0.5px,
+      transparent 0
+    );
+    background-size: 4px 4px;
+  }
+
+  .plate-dark {
+    background-color: var(--color-navy-850);
+    color: var(--color-paper);
+    border-color: var(--color-navy-300);
+  }
+
+  .plate-dark::after {
+    opacity: 0.28;
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      color-mix(in srgb, var(--color-navy-100) 14%, transparent) 0.5px,
+      transparent 0
+    );
+  }
+
+  /* --- Title band: the printed header strip across a chart --------------- */
+
+  .title-band {
+    background-color: var(--color-saffron);
+    color: var(--color-ink);
+    border-bottom: var(--keyline) solid var(--color-ink);
+  }
+
+  .title-band-navy {
+    background-color: var(--color-navy-800);
+    color: var(--color-paper);
+    border-bottom: var(--keyline) solid var(--color-saffron);
+  }
+
+  /* --- Rules: the double hairline that separates chart sections ---------- */
+
+  .rule-double {
+    border: 0;
+    height: 5px;
+    border-top: 1px solid currentColor;
+    border-bottom: 3px solid currentColor;
+    opacity: 0.85;
+  }
+
+  /* --- Callout numbers: the circled digit at a leader line's end --------- */
+
+  .callout-num {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 999px;
+    border: var(--keyline) solid currentColor;
+    font-family: var(--font-label);
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .callout-num-filled {
+    background-color: var(--color-saffron);
+    color: var(--color-ink);
+    border-color: var(--color-ink);
+  }
+
+  /* --- Controls --------------------------------------------------------- */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.5rem;
+    border: var(--keyline) solid var(--color-ink);
+    border-radius: var(--radius-plate);
+    font-family: var(--font-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition:
+      transform 0.18s var(--ease-chart),
+      box-shadow 0.18s var(--ease-chart),
+      background-color 0.18s var(--ease-chart);
+  }
+
+  .btn-primary {
+    background-color: var(--color-saffron);
+    color: var(--color-ink);
+    box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.45);
+  }
+
+  .btn-primary:hover {
+    background-color: #ffbb47;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px -6px rgb(0 0 0 / 0.55);
+  }
+
+  .btn-primary:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 4px -1px rgb(0 0 0 / 0.4);
+  }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--color-paper);
+    border-color: var(--color-navy-300);
+  }
+
+  .btn-ghost:hover {
+    background-color: color-mix(in srgb, var(--color-navy-100) 12%, transparent);
+    border-color: var(--color-paper);
+  }
+
+  .btn-ink {
+    background-color: var(--color-navy-900);
+    color: var(--color-paper);
+    border-color: var(--color-ink);
+    box-shadow: 0 2px 8px -2px rgb(10 24 38 / 0.5);
+  }
+
+  .btn-ink:hover {
+    background-color: var(--color-navy-800);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px -6px rgb(10 24 38 / 0.6);
+  }
+
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* --- Fields: the printed enquiry slip --------------------------------- */
+
+  .field {
+    width: 100%;
+    background-color: var(--color-paper-bright);
+    color: var(--color-ink);
+    border: var(--keyline) solid var(--color-ink);
+    border-radius: var(--radius-plate);
+    padding: 0.7rem 0.85rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .field::placeholder {
+    color: #566b7c;
+    opacity: 1;
+  }
+
+  .field:hover {
+    background-color: #fff;
+  }
+
+  .field[aria-invalid="true"] {
+    border-color: var(--color-alert);
+    background-color: #fdf2f0;
+  }
+
+  /* --- Utilities -------------------------------------------------------- */
+
+  .shell {
+    width: 100%;
+    max-width: var(--plate-max);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 0.5rem;
+    top: -4rem;
+    z-index: 100;
+    padding: 0.75rem 1.25rem;
+    background: var(--color-saffron);
+    color: var(--color-ink);
+    font-family: var(--font-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    transition: top 0.2s var(--ease-chart);
+  }
+
+  .skip-link:focus {
+    top: 0.5rem;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ============================================================================
+   Reveal motion — the one authored moment: leader lines drawing and callout
+   pins landing, as if the chart were being pointed at.
+
+   This is strictly progressive enhancement. Everything is visible by default;
+   only when the inline boot script has confirmed JS (adding `.js` to <html>)
+   does anything start hidden. With JS off, an IntersectionObserver failure, or
+   a hydration error, all content stays on screen.
+   ========================================================================== */
+
+@layer components {
+  /*
+   * Content-bearing elements only ever translate — they never fade from zero.
+   * A reader scrolling fast, or a slow observer callback, must never meet an
+   * empty region where a photograph or a key entry should be.
+   */
+  .js [data-reveal="pending"] .rise {
+    transform: translateY(12px);
+  }
+
+  [data-reveal="in"] .rise {
+    animation: rise-in 0.6s var(--ease-chart) both;
+    animation-delay: var(--delay, 0ms);
+  }
+
+  .js [data-reveal="pending"] .leader-path {
+    stroke-dasharray: var(--len, 400);
+    stroke-dashoffset: var(--len, 400);
+  }
+
+  [data-reveal="in"] .leader-path {
+    stroke-dasharray: var(--len, 400);
+    animation: draw-leader 0.9s var(--ease-chart) both;
+    animation-delay: var(--delay, 0ms);
+  }
+
+  .js [data-reveal="pending"] .callout-pin {
+    opacity: 0;
+    transform: scale(0.4);
+    transform-origin: center;
+  }
+
+  [data-reveal="in"] .callout-pin {
+    transform-origin: center;
+    animation: land-pin 0.5s var(--ease-chart) both;
+    animation-delay: calc(var(--delay, 0ms) + 620ms);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    transform: translateY(12px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes draw-leader {
+  from {
+    stroke-dashoffset: var(--len, 400);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes land-pin {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal] .rise,
+  .js [data-reveal] .callout-pin,
+  .js [data-reveal] .leader-path {
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+  }
+}
