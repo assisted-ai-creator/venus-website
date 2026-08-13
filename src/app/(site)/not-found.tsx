@@ -17,7 +17,7 @@ export default async function NotFound() {
           </h1>
           <p className="mt-6 max-w-[52ch] text-[1.08rem] leading-[1.7] on-ground-soft text-pretty">
             The page you asked for does not exist, or it has moved. Everything on the site is
-            reachable from the list below.
+            reachable from the below links.
           </p>
 
           <ul className="mt-10 border-t border-rule-strong">
