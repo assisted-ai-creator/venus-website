@@ -69,17 +69,17 @@ export default async function AlbumPage({ params }: Params) {
         meta={meta}
       />
 
-      <section className="wall wall-dense">
-        <div className="shell py-14 sm:py-20">
+      <section className="wall">
+        <div className="shell band">
           {album.photos.length ? (
             <PhotoGrid photos={album.photos} />
           ) : (
-            <p className="chart-label on-ground-soft">This album has no photographs yet.</p>
+            <p className="chart-label on-ground-faint">This album has no photographs yet.</p>
           )}
 
           <nav
             aria-label="Other albums"
-            className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t-2 keyline-ground pt-7"
+            className="mt-[clamp(2.5rem,5vw,4rem)] flex flex-wrap items-center justify-between gap-4 border-t border-hairline pt-8"
           >
             <Link href="/gallery" className="btn btn-ghost">
               <Icon name="chevron" size={13} className="rotate-180" />

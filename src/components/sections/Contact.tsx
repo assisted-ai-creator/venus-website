@@ -1,11 +1,32 @@
-import { Plate, TitleBand } from "@/components/chart/Plate";
+import { Plate } from "@/components/chart/Plate";
 import { Icon } from "@/components/chart/Icon";
 import { EnquiryForm } from "@/components/site/EnquiryForm";
 import { MapPlate } from "@/components/site/MapPlate";
 import { Intro, SectionHeading, rows, str } from "./parts";
 import type { SectionProps } from "./types";
 
-/** Address, office hours and the email addresses, as one card. */
+/** The label that opens each block of contact details. */
+function DetailHeading({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <h2 className={`chart-label on-ground-accent ${className}`}>{children}</h2>;
+}
+
+/** One hairline-ruled row: what it is on the left, what it says on the right. */
+function DetailRow({ term, children }: { term: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-1 border-b border-paper-shade py-3.5">
+      <dt className="text-[0.97rem] on-ground-faint">{term}</dt>
+      <dd className="text-[0.97rem] font-semibold on-ground">{children}</dd>
+    </div>
+  );
+}
+
+/** Address, office hours and the email addresses, ruled off as a column. */
 export function ContactPanel({ data, site }: SectionProps) {
   const s = site.settings.school;
   const custom = str(data.source, "school") === "custom";
@@ -18,80 +39,76 @@ export function ContactPanel({ data, site }: SectionProps) {
     ? rows(data.hours).map((h) => ({ days: str(h.days), time: str(h.time) }))
     : s.hours;
 
+  const emails = [
+    { address: s.emails.helpdesk, note: "General enquiries" },
+    { address: s.emails.principal, note: "Principal’s office" },
+  ].filter((e) => e.address);
+
+  const mapsHref = s.map.query
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.map.query)}`
+    : "";
+
   return (
-    <Plate>
-      {str(data.plateTitle) ? <TitleBand plate="CARD">{str(data.plateTitle)}</TitleBand> : null}
-      <div className="space-y-6 p-5 sm:p-7">
-        <div className="flex gap-4">
-          <span className="mt-0.5 flex-none text-amber-ink">
-            <Icon name="pin" size={22} />
+    <div>
+      {str(data.plateTitle) ? <SectionHeading className="mb-8">{str(data.plateTitle)}</SectionHeading> : null}
+
+      <DetailHeading>Campus</DetailHeading>
+      <address className="mt-4 text-[1rem] not-italic leading-[1.75] on-ground-soft">
+        {addressLines.map((line, i) => (
+          <span key={i}>
+            {line}
+            {i < addressLines.length - 1 ? <br /> : null}
           </span>
-          <address className="not-italic">
-            <h2 className="chart-label mb-1.5 opacity-65">Campus</h2>
-            <p className="text-lg leading-snug">
-              {addressLines.map((line, i) => (
-                <span key={i}>
-                  {line}
-                  {i < addressLines.length - 1 ? <br /> : null}
-                </span>
-              ))}
-            </p>
-            {locality ? <p className="mt-2 text-sm text-ink-soft">{locality}</p> : null}
-          </address>
-        </div>
+        ))}
+      </address>
+      {locality ? <p className="mt-3 text-[0.93rem] on-ground-faint">{locality}</p> : null}
+      {mapsHref ? (
+        <a
+          href={mapsHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="chart-label mt-4 inline-flex items-center gap-2 on-ground-accent hover-accent"
+        >
+          Open in maps
+          <Icon name="arrow" size={12} />
+        </a>
+      ) : null}
 
-        {hours.length ? (
-          <div className="flex gap-4">
-            <span className="mt-0.5 flex-none text-amber-ink">
-              <Icon name="clock" size={22} />
-            </span>
-            <div>
-              <h2 className="chart-label mb-1.5 opacity-65">Office hours</h2>
-              <dl className="space-y-1">
-                {hours.map((h) => (
-                  <div key={h.days} className="flex flex-wrap gap-x-3">
-                    <dt className="font-semibold">{h.days}</dt>
-                    <dd className="tabular text-ink-soft">{h.time}</dd>
-                  </div>
-                ))}
-              </dl>
-              {str(data.hoursNote) ? (
-                <p className="mt-2 text-sm text-ink-soft">{str(data.hoursNote)}</p>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
+      {hours.length ? (
+        <>
+          <DetailHeading className="mt-8">Office hours</DetailHeading>
+          <dl className="mt-4 border-t border-paper-shade">
+            {hours.map((h) => (
+              <DetailRow key={h.days} term={h.days}>
+                <span className="tabular">{h.time}</span>
+              </DetailRow>
+            ))}
+          </dl>
+          {str(data.hoursNote) ? (
+            <p className="mt-3 text-[0.93rem] on-ground-faint">{str(data.hoursNote)}</p>
+          ) : null}
+        </>
+      ) : null}
 
-        {(data.showEmails ?? true) && (s.emails.helpdesk || s.emails.principal) ? (
-          <div className="flex gap-4">
-            <span className="mt-0.5 flex-none text-amber-ink">
-              <Icon name="mail" size={22} />
-            </span>
-            <div>
-              <h2 className="chart-label mb-1.5 opacity-65">Email</h2>
-              <ul className="space-y-1">
-                {[
-                  { address: s.emails.helpdesk, note: "General enquiries" },
-                  { address: s.emails.principal, note: "Principal’s office" },
-                ]
-                  .filter((e) => e.address)
-                  .map((e) => (
-                    <li key={e.address} className="pt-1 first:pt-0">
-                      <a
-                        href={`mailto:${e.address}`}
-                        className="break-all font-semibold underline underline-offset-2"
-                      >
-                        {e.address}
-                      </a>
-                      <span className="block text-sm text-ink-soft">{e.note}</span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          </div>
-        ) : null}
-      </div>
-    </Plate>
+      {(data.showEmails ?? true) && emails.length ? (
+        <>
+          <DetailHeading className="mt-8">Email</DetailHeading>
+          <ul className="mt-4 grid gap-3">
+            {emails.map((e) => (
+              <li key={e.address}>
+                <a
+                  href={`mailto:${e.address}`}
+                  className="text-[0.97rem] font-medium break-words on-ground hover-accent"
+                >
+                  {e.address}
+                </a>
+                <span className="mt-0.5 block text-[0.88rem] on-ground-faint">{e.note}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+    </div>
   );
 }
 
@@ -104,30 +121,18 @@ export function PhonePanel({ data, site }: SectionProps) {
   if (!phones.length) return null;
 
   return (
-    <Plate>
-      {str(data.plateTitle) ? (
-        <TitleBand plate={str(data.plateNumber) || undefined}>{str(data.plateTitle)}</TitleBand>
-      ) : null}
-      <ul className="divide-y-2 divide-paper-shade">
+    <div>
+      <DetailHeading>{str(data.plateTitle, "Telephone")}</DetailHeading>
+      <dl className="mt-4 border-t border-paper-shade">
         {phones.map((p) => (
-          <li key={p.number} className="flex items-center justify-between gap-4 px-5 py-3.5">
-            <span>
-              <span className="chart-label block opacity-65">{p.label}</span>
-              <a href={p.href} className="tabular text-lg font-semibold underline underline-offset-2">
-                {p.number}
-              </a>
-            </span>
-            <a
-              href={p.href}
-              className="btn btn-ink !px-3 !py-2"
-              aria-label={`Call ${p.label} on ${p.number}`}
-            >
-              <Icon name="phone" size={15} />
+          <DetailRow key={p.number} term={p.label}>
+            <a href={p.href} className="tabular on-ground hover-accent">
+              {p.number}
             </a>
-          </li>
+          </DetailRow>
         ))}
-      </ul>
-    </Plate>
+      </dl>
+    </div>
   );
 }
 
@@ -158,57 +163,59 @@ export function EnquiryPanel({ data, site }: SectionProps) {
   const showMap = data.showMap ?? false;
   const hasAside = !!(str(data.heading) || str(data.intro) || showPhones || showHours || showMap);
 
+  const titled = !!str(data.plateTitle);
   const form = (
-    <Plate>
-      {str(data.plateTitle) ? (
-        <TitleBand plate={str(data.plateNumber) || undefined}>{str(data.plateTitle)}</TitleBand>
+    <Plate className="p-[clamp(1.625rem,3.5vw,2.75rem)]">
+      {titled ? (
+        <>
+          <p className="chart-label on-ground-accent">{str(data.plateNumber, "Enquiry")}</p>
+          <h2 className="display mt-3.5 text-[clamp(1.5rem,2.8vw,2.125rem)] leading-[1.2] on-ground">
+            {str(data.plateTitle)}
+          </h2>
+        </>
       ) : null}
-      <EnquiryForm />
+      <div className={titled ? "mt-8" : ""}>
+        <EnquiryForm />
+      </div>
     </Plate>
   );
 
   if (!hasAside) return form;
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-14">
-      <div>
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-[clamp(2.5rem,5vw,5rem)]">
+      <div className="lg:order-1">{form}</div>
+
+      <div className="lg:order-2">
         <SectionHeading>{str(data.heading)}</SectionHeading>
         <Intro>{str(data.intro)}</Intro>
 
-        {showPhones || showHours ? (
-          <dl className="mt-8 space-y-4">
-            {showPhones
-              ? s.phones.map((p) => (
-                  <div key={p.number} className="flex items-center gap-4">
-                    <span className="flex-none on-ground-accent">
-                      <Icon name="phone" size={20} />
-                    </span>
-                    <span>
-                      <dt className="chart-label on-ground-faint">{p.label}</dt>
-                      <dd>
-                        <a href={p.href} className="tabular text-lg on-ground hover-accent">
-                          {p.number}
-                        </a>
-                      </dd>
-                    </span>
-                  </div>
-                ))
-              : null}
+        {showPhones && s.phones.length ? (
+          <div className={str(data.heading) || str(data.intro) ? "mt-9" : ""}>
+            <DetailHeading>Telephone</DetailHeading>
+            <dl className="mt-4 border-t border-paper-shade">
+              {s.phones.map((p) => (
+                <DetailRow key={p.number} term={p.label}>
+                  <a href={p.href} className="tabular on-ground hover-accent">
+                    {p.number}
+                  </a>
+                </DetailRow>
+              ))}
+            </dl>
+          </div>
+        ) : null}
 
-            {showHours && s.hours[0] ? (
-              <div className="flex items-center gap-4">
-                <span className="flex-none on-ground-accent">
-                  <Icon name="clock" size={20} />
-                </span>
-                <span>
-                  <dt className="chart-label on-ground-faint">Office hours</dt>
-                  <dd className="on-ground">
-                    {s.hours[0].days}, {s.hours[0].time}
-                  </dd>
-                </span>
-              </div>
-            ) : null}
-          </dl>
+        {showHours && s.hours.length ? (
+          <div className="mt-8">
+            <DetailHeading>Office hours</DetailHeading>
+            <dl className="mt-4 border-t border-paper-shade">
+              {s.hours.map((h) => (
+                <DetailRow key={h.days} term={h.days}>
+                  <span className="tabular">{h.time}</span>
+                </DetailRow>
+              ))}
+            </dl>
+          </div>
         ) : null}
 
         {showMap ? (
@@ -220,8 +227,6 @@ export function EnquiryPanel({ data, site }: SectionProps) {
           />
         ) : null}
       </div>
-
-      {form}
     </div>
   );
 }

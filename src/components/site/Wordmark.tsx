@@ -1,13 +1,13 @@
 /**
  * The school's logo, as the browser tab already carries it: the VENUS WORLD
- * SCHOOLS lockup with the four-figure emblem, on its own white card.
+ * SCHOOLS lockup with the four-figure emblem.
  *
- * It is set on white rather than dropped straight onto the chrome because the
- * emblem's fourth figure is navy — on the navy header, footer and panel that
- * figure disappeared into the background. The card is part of the school's
- * artwork, not a device invented here.
+ * On the white masthead it prints straight onto the page. On the navy footer
+ * and the navy menu sheet it is laid on a white card, because the emblem's
+ * fourth figure is navy and disappears into that ground. The card is part of
+ * the school's own artwork, not a device invented here.
  *
- * The name is no longer set as type beside it. The lockup contains the words
+ * The name is not set as type beside it. The lockup contains the words
  * already, and printing both said "Venus World Schools" twice.
  *
  * `/logo-lockup.png` is cropped from that same artwork — the 192px touch icon
@@ -23,22 +23,29 @@ const RATIO = 274 / 138;
 export function Wordmark({
   className = "",
   compact = false,
+  size,
+  onDark = false,
 }: {
   className?: string;
+  /** The menu sheet's smaller lockup. */
   compact?: boolean;
+  /** Explicit height in px, when neither default suits. */
+  size?: number;
+  /** Lay it on a white card, for the navy footer and menu sheet. */
+  onDark?: boolean;
 }) {
-  const height = compact ? 34 : 46;
+  const height = size ?? (compact ? 44 : 54);
   const width = Math.round(height * RATIO);
 
   return (
-    <span className={`inline-flex ${className}`}>
+    <span className={`inline-flex ${onDark ? "bg-white px-3 py-2.5" : ""} ${className}`}>
       <img
         src="/logo-lockup.png"
         width={width}
         height={height}
         alt="Venus World Schools"
         decoding="async"
-        className="block flex-none rounded-[2px]"
+        className="block flex-none"
         style={{ height, width }}
       />
     </span>

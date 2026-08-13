@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Plate, TitleBand, Rule } from "@/components/chart/Plate";
 import { Icon } from "@/components/chart/Icon";
 import { InView } from "@/components/chart/InView";
 import { CampusCutaway } from "@/components/diagrams/CampusCutaway";
@@ -16,6 +15,17 @@ const COLS: Record<string, string> = {
   "4": "sm:grid-cols-2 lg:grid-cols-4",
 };
 
+/**
+ * The four coding inks, in the order the register bar prints them. A run of
+ * cards or steps takes them in turn, so the colour is an index rather than a
+ * decoration — the same key the header and footer strips use.
+ */
+const KEY_INKS = ["#ffab1f", "#c8321e", "#0b4b8f", "#1b6e4a"];
+const ink = (i: number) => KEY_INKS[i % KEY_INKS.length];
+
+/** "01", "02" — the filing index printed beside a list entry. */
+const index2 = (i: number) => String(i + 1).padStart(2, "0");
+
 /* -------------------------------------------------------- numbered list --- */
 
 export function NumberedList({ data }: SectionProps) {
@@ -25,38 +35,42 @@ export function NumberedList({ data }: SectionProps) {
   const marker = str(data.marker, "numbers");
   const two = str(data.columns, "1") === "2";
   const mark = (i: number) =>
-    marker === "letters" ? String.fromCharCode(65 + i) : marker === "none" ? "" : String(i + 1);
+    marker === "letters" ? String.fromCharCode(65 + i) : marker === "none" ? "" : index2(i);
 
   return (
-    <Plate>
-      {str(data.plateTitle) || str(data.plateNumber) ? (
-        <TitleBand plate={str(data.plateNumber) || undefined}>{str(data.plateTitle)}</TitleBand>
+    <div>
+      {str(data.plateTitle) ? (
+        <div className="mb-8 flex flex-wrap items-baseline justify-between gap-x-10 gap-y-3">
+          <SectionHeading>{str(data.plateTitle)}</SectionHeading>
+          {str(data.plateNumber) ? (
+            <p className="chart-label on-ground-faint">{str(data.plateNumber)}</p>
+          ) : null}
+        </div>
       ) : null}
-      <ol className={`gap-x-10 gap-y-4 p-5 sm:p-6 ${two ? "grid sm:grid-cols-2" : "space-y-3"}`}>
+
+      <ol className={`grid gap-x-[clamp(1.75rem,4vw,3.5rem)] ${two ? "sm:grid-cols-2" : ""}`}>
         {items.map((item, i) => (
-          <li key={`${str(item.title)}-${i}`} className="flex gap-3.5">
-            {marker !== "none" ? (
-              <span
-                className={`callout-num mt-0.5 flex-none !h-6 !w-6 !text-[0.7rem] ${
-                  marker === "letters" ? "!rounded-none" : ""
-                }`}
-              >
-                {mark(i)}
-              </span>
-            ) : null}
-            <span className="pt-0.5">
-              <span className="block text-sm font-semibold">{str(item.title)}</span>
+          <li
+            key={`${str(item.title)}-${i}`}
+            className="flex gap-4 border-t border-paper-shade py-4"
+          >
+            {marker !== "none" ? <span className="callout-num pt-1">{mark(i)}</span> : null}
+            <span className="flex-1">
+              <span className="block text-[0.99rem] font-semibold on-ground">{str(item.title)}</span>
               {str(item.detail) ? (
-                <span className="block text-sm text-ink-soft">{str(item.detail)}</span>
+                <span className="mt-1 block text-[0.95rem] leading-[1.6] on-ground-soft">
+                  {str(item.detail)}
+                </span>
               ) : null}
             </span>
           </li>
         ))}
       </ol>
+
       {str(data.note) ? (
-        <p className="border-t-2 border-paper-shade px-5 py-3 text-sm text-ink-soft">{str(data.note)}</p>
+        <p className="mt-5 text-[0.88rem] leading-[1.6] on-ground-faint">{str(data.note)}</p>
       ) : null}
-    </Plate>
+    </div>
   );
 }
 
@@ -71,12 +85,22 @@ export function Steps({ data }: SectionProps) {
       <Intro>{str(data.intro)}</Intro>
 
       {steps.length ? (
-        <InView className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <InView
+          className={`grid gap-[clamp(1.5rem,3vw,2.75rem)] sm:grid-cols-2 lg:grid-cols-4 ${
+            str(data.heading) || str(data.intro) ? "mt-[clamp(2rem,4vw,3.25rem)]" : ""
+          }`}
+        >
           {steps.map((s, i) => (
-            <div key={`${str(s.title)}-${i}`} className="rise" style={{ "--delay": `${i * 100}ms` } as React.CSSProperties}>
-              <span className="callout-num callout-num-filled !h-11 !w-11 !text-lg">{i + 1}</span>
-              <h3 className="display mt-4 text-xl on-ground">{str(s.title)}</h3>
-              {str(s.detail) ? <p className="mt-2 text-sm on-ground-soft">{str(s.detail)}</p> : null}
+            <div
+              key={`${str(s.title)}-${i}`}
+              className="rise border-t-2 pt-5.5"
+              style={{ "--delay": `${i * 90}ms`, borderTopColor: ink(i) } as React.CSSProperties}
+            >
+              <span className="chart-label tabular on-ground-faint">Step {index2(i)}</span>
+              <h3 className="display-sm mt-3 text-[1.32rem] on-ground">{str(s.title)}</h3>
+              {str(s.detail) ? (
+                <p className="mt-2.5 text-[0.95rem] leading-[1.7] on-ground-soft">{str(s.detail)}</p>
+              ) : null}
             </div>
           ))}
         </InView>
@@ -133,40 +157,57 @@ export function CardGrid({ data, site }: SectionProps) {
       <SectionHeading>{str(data.heading)}</SectionHeading>
       <Intro>{str(data.intro)}</Intro>
 
-      <ul className={`grid ${compact ? "gap-3" : "gap-6"} ${cols} ${str(data.heading) ? "mt-8" : ""}`}>
+      <ul
+        className={`grid ${compact ? "gap-x-10" : "gap-[clamp(1.5rem,3vw,2.75rem)]"} ${cols} ${
+          str(data.heading) || str(data.intro) ? "mt-[clamp(2rem,4vw,3.5rem)]" : ""
+        }`}
+      >
         {cards.map((c, i) => (
-          <li key={`${c.href}-${i}`}>
+          <li key={`${c.href}-${i}`} className={compact ? "border-t border-paper-shade" : ""}>
             {compact ? (
               <Link
                 href={c.href || "#"}
-                className="plate flex h-full items-center justify-between gap-4 px-4 py-3.5 transition-transform hover:-translate-y-0.5"
+                className="group flex items-center justify-between gap-4 py-4 on-ground transition-colors hover-accent"
               >
-                <span className="display text-base">{c.title}</span>
-                <Icon name="arrow" size={16} />
+                <span className="display-sm text-[1.05rem]">{c.title}</span>
+                <Icon name="arrow" size={15} className="flex-none opacity-60" />
               </Link>
             ) : (
-              <Link href={c.href || "#"} className="plate group flex h-full flex-col overflow-hidden">
+              <Link href={c.href || "#"} className="group block on-ground transition-colors hover-accent">
                 {c.src ? (
-                  <Img
-                    src={thumb(c.src)}
-                    alt={c.alt || c.title}
-                    width={800}
-                    height={600}
-                    className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                  />
-                ) : null}
-                {c.band || c.plateNumber ? (
-                  <TitleBand plate={c.plateNumber || undefined}>{c.band}</TitleBand>
-                ) : null}
-                <div className="flex flex-1 flex-col p-5">
-                  <h3 className="display text-2xl">{c.title}</h3>
-                  {c.deva ? <p className="deva mt-0.5 text-base text-ink-soft">{c.deva}</p> : null}
-                  {c.text ? <p className="mt-3 flex-1 text-sm">{c.text}</p> : null}
-                  <span className="chart-label mt-5 inline-flex items-center gap-2 text-amber-ink">
-                    {c.title}
-                    <Icon name="arrow" size={14} />
+                  <span className="block overflow-hidden bg-image-bed">
+                    <Img
+                      src={thumb(c.src)}
+                      alt={c.alt || c.title}
+                      width={800}
+                      height={600}
+                      className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
                   </span>
-                </div>
+                ) : null}
+
+                {c.band || c.plateNumber ? (
+                  <span className="mt-5 flex items-center gap-2.5">
+                    <i
+                      aria-hidden="true"
+                      className="block h-[3px] w-5.5 flex-none"
+                      style={{ background: ink(i) }}
+                    />
+                    <span className="chart-label on-ground-faint">
+                      {[c.band, c.plateNumber].filter(Boolean).join(" · ")}
+                    </span>
+                  </span>
+                ) : null}
+
+                <span className={`display-sm block text-[1.45rem] ${c.band || c.src ? "mt-3" : ""}`}>
+                  {c.title}
+                </span>
+                {c.deva ? <span className="deva mt-1 block text-base on-ground-faint">{c.deva}</span> : null}
+                {c.text ? (
+                  <span className="mt-2.5 block text-[0.95rem] leading-[1.7] on-ground-soft">
+                    {c.text}
+                  </span>
+                ) : null}
               </Link>
             )}
           </li>
@@ -188,16 +229,16 @@ export function CalloutKey({ data }: SectionProps) {
       <Intro>{str(data.intro)}</Intro>
 
       {diagram === "growth" ? (
-        <InView className="mt-10">
+        <InView className="mt-[clamp(2rem,4vw,3.25rem)]">
           <GrowthStages />
         </InView>
       ) : diagram === "campus" ? (
-        <InView className="mt-10 grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-14">
+        <InView className="mt-[clamp(2rem,4vw,3.25rem)] grid gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-[clamp(2.5rem,5vw,4.5rem)]">
           <CampusCutaway className="h-auto w-full" />
           <KeyList items={items} />
         </InView>
       ) : items.length ? (
-        <InView className="mt-10">
+        <InView className="mt-[clamp(2rem,4vw,3.25rem)]">
           <KeyList items={items} className="sm:grid-cols-2 lg:grid-cols-3" />
         </InView>
       ) : null}
@@ -214,13 +255,17 @@ function KeyList({
 }) {
   if (!items.length) return null;
   return (
-    <ol className={`grid gap-x-8 gap-y-5 self-center ${className}`}>
+    <ol className={`grid gap-x-8 self-center ${className}`}>
       {items.map((k, i) => (
-        <li key={i} className="rise flex gap-4" style={{ "--delay": `${300 + i * 70}ms` } as React.CSSProperties}>
-          <span className="callout-num callout-num-filled mt-0.5">{i + 1}</span>
+        <li
+          key={i}
+          className="rise flex gap-4 border-t border-paper-shade py-3.5"
+          style={{ "--delay": `${300 + i * 70}ms` } as React.CSSProperties}
+        >
+          <span className="callout-num pt-1">{index2(i)}</span>
           <span>
-            <span className="display block text-lg on-ground">{str(k.label)}</span>
-            <span className="text-sm on-ground-soft">{str(k.detail)}</span>
+            <span className="display-sm block text-[1.05rem] on-ground">{str(k.label)}</span>
+            <span className="text-[0.92rem] leading-[1.6] on-ground-soft">{str(k.detail)}</span>
           </span>
         </li>
       ))}
@@ -236,48 +281,51 @@ export function FacilityKeySection({ data }: SectionProps) {
 
   return (
     <div>
-      <SectionHeading>{str(data.heading)}</SectionHeading>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-10 gap-y-3">
+        <SectionHeading>{str(data.heading)}</SectionHeading>
+        {str(data.plateTitle) || str(data.plateNumber) ? (
+          <p className="chart-label on-ground-faint">
+            {[str(data.plateTitle), str(data.plateNumber)].filter(Boolean).join(" · ")}
+          </p>
+        ) : null}
+      </div>
       <Intro>{str(data.intro)}</Intro>
 
       {items.length ? (
-        <Plate className={str(data.heading) || str(data.intro) ? "mt-10" : ""}>
-          <TitleBand plate={str(data.plateNumber) || undefined}>{str(data.plateTitle)}</TitleBand>
-          <ol className="grid sm:grid-cols-2">
-            {items.map((f, i) => (
-              <li
-                key={i}
-                className={`flex gap-4 px-5 py-4 ${
-                  i < items.length - 1 ? "border-b-2 border-paper-shade" : ""
-                } ${i % 2 === 0 ? "sm:border-r-2 sm:border-r-paper-shade" : ""} ${
-                  i >= items.length - 2 ? "sm:border-b-0" : ""
-                }`}
-              >
-                <span
-                  aria-hidden="true"
-                  className="callout-num mt-0.5 !h-7 !w-7 flex-none !rounded-none !text-[0.72rem]"
-                >
-                  {letter(i)}
+        <ol
+          className={`grid gap-x-[clamp(1.75rem,4vw,3.5rem)] sm:grid-cols-2 ${
+            str(data.heading) || str(data.intro) ? "mt-[clamp(2rem,4vw,3.25rem)]" : ""
+          }`}
+        >
+          {items.map((f, i) => (
+            <li key={i} className="flex gap-4 border-t border-paper-shade py-4">
+              <span aria-hidden="true" className="callout-num pt-1">
+                {letter(i)}
+              </span>
+              <span>
+                <span className="display-sm block text-[1.05rem] on-ground">
+                  {str(f.name)}
+                  {str(f.deva) ? (
+                    <span className="deva ml-2.5 text-[0.95rem] font-normal on-ground-accent">
+                      {str(f.deva)}
+                    </span>
+                  ) : null}
                 </span>
-                <span>
-                  <span className="display block text-[1.05rem] leading-tight">
-                    {str(f.name)}
-                    {str(f.deva) ? (
-                      <span className="deva ml-2 text-base font-normal text-amber-ink">{str(f.deva)}</span>
-                    ) : null}
-                  </span>
-                  <span className="mt-1 block text-sm text-ink-soft">{str(f.detail)}</span>
+                <span className="mt-1 block text-[0.92rem] leading-[1.6] on-ground-soft">
+                  {str(f.detail)}
                 </span>
-              </li>
-            ))}
-          </ol>
-        </Plate>
+              </span>
+            </li>
+          ))}
+        </ol>
       ) : null}
     </div>
   );
 }
 
-/* ----------------------------------------------------- programme plates --- */
+/* ----------------------------------------------------- programme stages --- */
 
+/** The three stages, as one row of open cards — no boxes, no borders. */
 export function ProgrammeStages({ data }: SectionProps) {
   const items = rows(data.items);
   if (!items.length) return null;
@@ -287,70 +335,95 @@ export function ProgrammeStages({ data }: SectionProps) {
       <SectionHeading>{str(data.heading)}</SectionHeading>
       <Intro>{str(data.intro)}</Intro>
 
-      <div className="mt-10 space-y-8">
+      <InView
+        className={`grid gap-[clamp(1.5rem,3vw,2.75rem)] sm:grid-cols-2 lg:grid-cols-3 ${
+          str(data.heading) || str(data.intro) ? "mt-[clamp(2.25rem,4vw,3.5rem)]" : ""
+        }`}
+      >
         {items.map((p, i) => {
           const src = str(p.src);
           const href = str(p.href);
           const callouts = rows(p.callouts);
 
-          return (
-            <InView key={i} as="article" className="plate grid gap-0 overflow-hidden md:grid-cols-[1fr_1.1fr]">
-              <div className={i % 2 ? "md:order-2" : ""}>
-                {src ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
+          const body = (
+            <>
+              {src ? (
+                <span className="block overflow-hidden bg-image-bed">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={src}
+                    src={thumb(src)}
                     srcSet={`${thumb(src)} 800w, ${src} 1600w`}
-                    sizes="(min-width: 768px) 560px, 100vw"
+                    sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw"
                     alt={str(p.alt)}
-                    width={1200}
-                    height={900}
+                    width={800}
+                    height={600}
                     loading="lazy"
                     decoding="async"
-                    className="h-56 w-full object-cover sm:h-72 md:h-full"
+                    className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
-                ) : null}
-              </div>
+                </span>
+              ) : null}
 
-              <div className="flex flex-col">
-                <TitleBand plate={str(p.plateNumber) || undefined} tone={i === 1 ? "navy" : "saffron"}>
-                  {str(p.band)}
-                </TitleBand>
-                <div className="flex-1 p-5 sm:p-7">
-                  <h3 className="display text-[clamp(1.6rem,3.4vw,2.3rem)]">{str(p.name)}</h3>
-                  {str(p.deva) ? <p className="deva mt-1 text-lg text-ink-soft">{str(p.deva)}</p> : null}
-                  {str(p.summary) ? <p className="prose-chart mt-3">{str(p.summary)}</p> : null}
+              {str(p.band) ? (
+                <span className="mt-5 flex items-center gap-2.5">
+                  <i
+                    aria-hidden="true"
+                    className="block h-[3px] w-5.5 flex-none"
+                    style={{ background: ink(i) }}
+                  />
+                  <span className="chart-label on-ground-faint">{str(p.band)}</span>
+                </span>
+              ) : null}
 
-                  {callouts.length ? (
-                    <ul className="mt-5 grid gap-3 sm:grid-cols-2">
-                      {callouts.map((c, n) => (
-                        <li
-                          key={n}
-                          className="rise flex gap-3"
-                          style={{ "--delay": `${n * 60}ms` } as React.CSSProperties}
-                        >
-                          <span className="callout-num mt-0.5 !h-6 !w-6 !text-[0.7rem]">{n + 1}</span>
-                          <span>
-                            <span className="block text-sm font-semibold">{str(c.label)}</span>
-                            <span className="block text-sm text-ink-soft">{str(c.detail)}</span>
+              <span className="display-sm mt-3 block text-[1.6rem] font-medium">{str(p.name)}</span>
+              {str(p.deva) ? (
+                <span className="deva mt-1 block text-base on-ground-faint">{str(p.deva)}</span>
+              ) : null}
+              {str(p.summary) ? (
+                <span className="mt-2.5 block text-[0.95rem] leading-[1.7] on-ground-soft">
+                  {str(p.summary)}
+                </span>
+              ) : null}
+            </>
+          );
+
+          return (
+            <article
+              key={i}
+              className="rise"
+              style={{ "--delay": `${i * 90}ms` } as React.CSSProperties}
+            >
+              {href ? (
+                <Link href={href} className="group block on-ground transition-colors hover-accent">
+                  {body}
+                </Link>
+              ) : (
+                <div className="on-ground">{body}</div>
+              )}
+
+              {callouts.length ? (
+                <ul className="mt-5">
+                  {callouts.map((c, n) => (
+                    <li key={n} className="flex gap-3.5 border-t border-paper-shade py-2.5">
+                      <span className="callout-num pt-0.5">{index2(n)}</span>
+                      <span className="flex-1">
+                        <span className="block text-[0.9rem] font-semibold on-ground">
+                          {str(c.label)}
+                        </span>
+                        {str(c.detail) ? (
+                          <span className="block text-[0.88rem] leading-[1.55] on-ground-soft">
+                            {str(c.detail)}
                           </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-
-                  {href ? (
-                    <Link href={href} className="btn btn-ink mt-6 self-start">
-                      {str(p.name)}
-                      <Icon name="arrow" size={15} />
-                    </Link>
-                  ) : null}
-                </div>
-              </div>
-            </InView>
+                        ) : null}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </article>
           );
         })}
-      </div>
+      </InView>
     </div>
   );
 }
@@ -376,6 +449,14 @@ function fileSize(bytes: number): string {
   if (bytes < KB * KB) return `${Math.max(1, Math.round(bytes / KB))} KB`;
   return `${(bytes / (KB * KB)).toFixed(1)} MB`;
 }
+
+/** Notices are coded by kind, in the same four inks the register bar uses. */
+const KIND_INK: Record<string, string> = {
+  admission: "#0b4b8f",
+  achievement: "#1b6e4a",
+  event: "#c8321e",
+  notice: "#8a4b00",
+};
 
 export function NewsPanel({ data, site }: SectionProps) {
   const inline = rows(data.items);
@@ -418,78 +499,94 @@ export function NewsPanel({ data, site }: SectionProps) {
   if (!items.length && !(source === "board" && empty)) return null;
 
   return (
-    <Plate tone="dark">
-      {str(data.plateTitle) || str(data.plateNumber) ? (
-        <TitleBand tone="navy" plate={str(data.plateNumber) || undefined}>
-          {str(data.plateTitle)}
-        </TitleBand>
-      ) : null}
+    <div>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3 border-b-2 border-ink pb-4">
+        <h2 className="display text-[clamp(1.5rem,2.8vw,2.25rem)] leading-[1.1] on-ground">
+          {str(data.plateTitle, "Notices")}
+        </h2>
+        {ctas.length ? (
+          <Link href={ctas[0].href} className="chart-label on-ground-accent hover-accent">
+            {ctas[0].label}
+          </Link>
+        ) : str(data.plateNumber) ? (
+          <p className="chart-label on-ground-faint">{str(data.plateNumber)}</p>
+        ) : null}
+      </div>
 
       {items.length ? (
-        <ul className="divide-y-2 divide-navy-700">
+        <ul>
           {items.map((n, i) => {
             const parsed = n.date ? new Date(n.date) : null;
             const readable =
               parsed && !Number.isNaN(parsed.getTime())
                 ? parsed.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
                 : n.date;
+            const kindInk = KIND_INK[n.kind.toLowerCase()] ?? "#0b4b8f";
+
+            const heading = (
+              <span className="display-sm block text-[1.18rem] on-ground">{n.title}</span>
+            );
 
             return (
-              <li key={`${n.title}-${i}`} className="p-5">
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  {n.kind ? <span className="chart-label on-ground-accent">{n.kind}</span> : null}
-                  {readable ? (
-                    <time dateTime={n.date} className="chart-label tabular on-ground-faint">
-                      {readable}
-                    </time>
-                  ) : null}
-                  {/* Named, not merely coloured — the marker has to survive
-                      greyscale and a screen reader. */}
-                  {n.pinned ? (
-                    <span className="chart-label on-ground-accent border border-current px-1.5">Pinned</span>
-                  ) : null}
-                </div>
-
-                <h3 className="display mt-1.5 text-lg on-ground">
-                  {n.href ? (
-                    <Link href={n.href} className="hover-accent">
-                      {n.title}
-                    </Link>
-                  ) : (
-                    n.title
-                  )}
-                </h3>
-
-                {n.body ? <p className="mt-1 text-sm on-ground-soft">{n.body}</p> : null}
-
-                {n.file ? (
-                  <a
-                    href={n.file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="chart-label on-ground-accent mt-2.5 inline-flex items-center gap-2 underline underline-offset-2"
-                  >
-                    <Icon name="arrow" size={13} />
-                    {n.file.filename || "Open the attachment"}
-                    {fileSize(n.file.size) ? (
-                      <span className="tabular on-ground-faint">{fileSize(n.file.size)}</span>
+              <li key={`${n.title}-${i}`} className="border-b border-hairline last:border-b-0">
+                <div className="grid gap-x-6 gap-y-2 py-6 sm:grid-cols-[6.5rem_minmax(0,1fr)]">
+                  <div className="pt-1">
+                    {readable ? (
+                      <time dateTime={n.date} className="chart-label tabular block on-ground-faint">
+                        {readable}
+                      </time>
                     ) : null}
-                  </a>
-                ) : null}
+                    {n.kind ? (
+                      <span className="chart-label mt-1.5 block" style={{ color: kindInk }}>
+                        {n.kind}
+                      </span>
+                    ) : null}
+                    {/* Named, not merely coloured — the marker has to survive
+                        greyscale and a screen reader. */}
+                    {n.pinned ? (
+                      <span className="chart-label mt-1.5 inline-block border border-current px-1.5 on-ground-faint">
+                        Pinned
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    {n.href ? (
+                      <Link href={n.href} className="group block on-ground transition-colors hover-accent">
+                        {heading}
+                      </Link>
+                    ) : (
+                      heading
+                    )}
+
+                    {n.body ? (
+                      <p className="mt-2 text-[0.95rem] leading-[1.65] on-ground-soft">{n.body}</p>
+                    ) : null}
+
+                    {n.file ? (
+                      <a
+                        href={n.file.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="chart-label mt-3 inline-flex items-center gap-2 on-ground-accent hover-accent"
+                      >
+                        <Icon name="arrow" size={12} />
+                        {n.file.filename || "Open the attachment"}
+                        {fileSize(n.file.size) ? (
+                          <span className="tabular on-ground-faint">{fileSize(n.file.size)}</span>
+                        ) : null}
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
               </li>
             );
           })}
         </ul>
       ) : (
-        <p className="p-5 text-sm on-ground-soft">{empty}</p>
+        <p className="py-6 text-[0.95rem] on-ground-soft">{empty}</p>
       )}
-
-      {ctas.length ? (
-        <div className="keyline-ground border-t-2 p-5">
-          <Buttons items={ctas} />
-        </div>
-      ) : null}
-    </Plate>
+    </div>
   );
 }
 
@@ -502,54 +599,51 @@ export function ProfileCards({ data }: SectionProps) {
   return (
     <div>
       <SectionHeading>{str(data.heading)}</SectionHeading>
-      <div className={`mx-auto grid max-w-5xl gap-8 md:grid-cols-2 ${str(data.heading) ? "mt-8" : ""}`}>
+      <Intro>{str(data.intro)}</Intro>
+
+      <div
+        className={`grid gap-[clamp(1.75rem,4vw,3.5rem)] md:grid-cols-2 ${
+          str(data.heading) || str(data.intro) ? "mt-[clamp(2.25rem,4vw,3.5rem)]" : ""
+        }`}
+      >
         {cards.map((m, i) => {
           const positions = rows(m.positions).map((p) => str(p.text)).filter(Boolean);
           const honours = rows(m.honours).map((h) => str(h.text)).filter(Boolean);
 
           return (
-            <Plate key={i}>
-              <TitleBand plate={str(m.plateNumber) || undefined} tone={i % 2 === 0 ? "saffron" : "navy"}>
-                {str(m.role)}
-              </TitleBand>
-              <div className="p-6 sm:p-8">
-                {str(m.src) ? (
-                  <Img
-                    src={thumb(str(m.src))}
-                    alt={str(m.alt) || str(m.name)}
-                    width={400}
-                    height={400}
-                    className="mb-5 h-28 w-28 border-2 border-ink object-cover"
-                  />
-                ) : null}
-                <h2 className="display text-2xl">{str(m.name)}</h2>
-                {positions.length ? (
-                  <ul className="mt-4 space-y-2">
-                    {positions.map((p) => (
-                      <li key={p} className="flex gap-3 text-sm">
-                        <span className="mt-1 flex-none text-amber-ink">
-                          <Icon name="chevron" size={11} />
-                        </span>
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                {honours.length ? (
-                  <>
-                    <Rule className="my-6 text-ink opacity-30" />
-                    <h3 className="chart-label mb-3 opacity-65">Honours</h3>
-                    <ul className="flex flex-wrap gap-2">
-                      {honours.map((h) => (
-                        <li key={h} className="border-2 border-ink px-2.5 py-1 text-xs font-semibold">
-                          {h}
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                ) : null}
-              </div>
-            </Plate>
+            <div key={i} className="border-t-2 border-ink pt-6">
+              {str(m.src) ? (
+                <Img
+                  src={thumb(str(m.src))}
+                  alt={str(m.alt) || str(m.name)}
+                  width={400}
+                  height={400}
+                  className="mb-5 h-24 w-24 object-cover"
+                />
+              ) : null}
+
+              <h3 className="display text-[1.6rem] font-medium on-ground">{str(m.name)}</h3>
+              {str(m.role) ? <p className="chart-label mt-2 on-ground-accent">{str(m.role)}</p> : null}
+
+              {positions.length ? (
+                <ul className="mt-5.5 grid gap-2.5">
+                  {positions.map((p) => (
+                    <li key={p} className="text-[0.97rem] leading-[1.6] on-ground-soft">
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+
+              {honours.length ? (
+                <>
+                  <p className="chart-label mt-6 mb-2 on-ground-faint">Honours</p>
+                  <p className="text-[0.95rem] leading-[1.7] on-ground-soft">
+                    {honours.join(" · ")}
+                  </p>
+                </>
+              ) : null}
+            </div>
           );
         })}
       </div>
@@ -558,6 +652,9 @@ export function ProfileCards({ data }: SectionProps) {
 }
 
 /* ------------------------------------------------------------- blog list --- */
+
+const readableDate = (value: number) =>
+  new Date(value).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 
 export function BlogList({ data, site }: SectionProps) {
   const tag = str(data.tag).trim().toLowerCase();
@@ -568,10 +665,11 @@ export function BlogList({ data, site }: SectionProps) {
   if (limit > 0) posts = posts.slice(0, limit);
 
   const compact = str(data.variant, "card") === "list";
+  const spaced = str(data.heading) || str(data.intro) ? "mt-[clamp(2.25rem,4vw,3.5rem)]" : "";
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-5">
+      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div>
           <SectionHeading>{str(data.heading)}</SectionHeading>
           <Intro>{str(data.intro)}</Intro>
@@ -580,60 +678,60 @@ export function BlogList({ data, site }: SectionProps) {
       </div>
 
       {posts.length === 0 ? (
-        <Plate className={str(data.heading) ? "mt-8 p-6 sm:p-8" : "p-6 sm:p-8"}>
-          <p className="chart-label text-ink-soft">No posts have been published yet.</p>
-        </Plate>
+        <p className={`chart-label on-ground-faint ${spaced || "mt-6"}`}>
+          No posts have been published yet.
+        </p>
       ) : compact ? (
-        <ul className={`divide-y-2 divide-navy-700 ${str(data.heading) ? "mt-8" : ""}`}>
+        <ul className={`border-t border-rule-strong ${spaced}`}>
           {posts.map((p) => (
-            <li key={p.slug} className="py-4">
-              <Link href={`/blog/${p.slug}`} className="group flex flex-wrap items-baseline gap-x-4">
-                <span className="display text-lg on-ground group-accent">{p.title}</span>
-                {p.publishedAt ? (
-                  <time
-                    dateTime={new Date(p.publishedAt).toISOString()}
-                    className="chart-label tabular on-ground-faint"
-                  >
-                    {new Date(p.publishedAt).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </time>
-                ) : null}
+            <li key={p.slug} className="border-b border-paper-shade py-5">
+              <Link href={`/blog/${p.slug}`} className="group block on-ground transition-colors hover-accent">
+                <span className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                  <span className="display-sm text-[1.15rem]">{p.title}</span>
+                  {p.publishedAt ? (
+                    <time
+                      dateTime={new Date(p.publishedAt).toISOString()}
+                      className="chart-label tabular on-ground-faint"
+                    >
+                      {readableDate(p.publishedAt)}
+                    </time>
+                  ) : null}
+                </span>
               </Link>
-              {p.excerpt ? <p className="mt-1 text-sm on-ground-soft">{p.excerpt}</p> : null}
+              {p.excerpt ? (
+                <p className="mt-1.5 text-[0.95rem] leading-[1.65] on-ground-soft">{p.excerpt}</p>
+              ) : null}
             </li>
           ))}
         </ul>
       ) : (
-        <ul className={`grid gap-5 sm:grid-cols-2 lg:grid-cols-3 ${str(data.heading) ? "mt-8" : ""}`}>
+        <ul className={`grid gap-[clamp(1.5rem,3vw,2.5rem)] sm:grid-cols-2 lg:grid-cols-3 ${spaced}`}>
           {posts.map((p) => (
             <li key={p.slug}>
-              <Link href={`/blog/${p.slug}`} className="plate group flex h-full flex-col overflow-hidden">
+              <Link href={`/blog/${p.slug}`} className="group block on-ground transition-colors hover-accent">
                 {p.cover ? (
-                  <span className="relative block aspect-[4/3] overflow-hidden bg-navy-100">
+                  <span className="block overflow-hidden bg-image-bed">
                     <Img
                       src={thumb(p.cover)}
                       alt={p.coverAlt || p.title}
                       width={800}
                       height={600}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     />
                   </span>
                 ) : null}
-                <span className="flex flex-1 flex-col border-t-2 border-ink p-4">
+                <span className="block pt-5">
                   {p.publishedAt ? (
-                    <span className="chart-label tabular opacity-65">
-                      {new Date(p.publishedAt).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                    <span className="chart-label tabular block on-ground-faint">
+                      {readableDate(p.publishedAt)}
                     </span>
                   ) : null}
-                  <span className="display mt-1 text-lg">{p.title}</span>
-                  {p.excerpt ? <span className="mt-2 flex-1 text-sm text-ink-soft">{p.excerpt}</span> : null}
+                  <span className="display-sm mt-2 block text-[1.2rem]">{p.title}</span>
+                  {p.excerpt ? (
+                    <span className="mt-2 block text-[0.95rem] leading-[1.65] on-ground-soft">
+                      {p.excerpt}
+                    </span>
+                  ) : null}
                 </span>
               </Link>
             </li>

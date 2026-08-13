@@ -1,42 +1,58 @@
-import { Plate, TitleBand, Rule } from "@/components/chart/Plate";
-import { Icon } from "@/components/chart/Icon";
 import { Buttons, Intro, SectionHeading, links, rows, str } from "./parts";
 import type { SectionProps } from "./types";
 
-/** The filed record: a grid of headline figures with the source printed under it. */
+/**
+ * The filed record: a ruled grid of headline figures with the source printed
+ * under it. Every cell is one number a parent can check the school against, so
+ * the note under each figure carries what it was measured from.
+ */
 export function StatPlate({ data }: SectionProps) {
   const stats = rows(data.stats);
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_1.25fr] lg:gap-16">
-      <div>
+    <div>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-10 gap-y-4">
         <SectionHeading>{str(data.heading)}</SectionHeading>
-        <Intro>{str(data.intro)}</Intro>
-        <Buttons items={links(data.ctas)} className="mt-7" />
+        {str(data.plateTitle) || str(data.plateNumber) ? (
+          <p className="chart-label on-ground-faint">
+            {[str(data.plateTitle), str(data.plateNumber)].filter(Boolean).join(" · ")}
+          </p>
+        ) : null}
       </div>
 
-      <Plate>
-        {str(data.plateTitle) || str(data.plateNumber) ? (
-          <TitleBand plate={str(data.plateNumber) || undefined}>{str(data.plateTitle)}</TitleBand>
-        ) : null}
-        <div className="p-5 sm:p-7">
-          <dl className="grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-3">
-            {stats.map((s, i) => (
-              <div key={`${str(s.label)}-${i}`}>
-                <dt className="chart-label opacity-70">{str(s.label)}</dt>
-                <dd className="display tabular mt-1 text-[clamp(1.6rem,4vw,2.2rem)]">{str(s.value)}</dd>
-                {str(s.note) ? <dd className="text-xs text-ink-soft">{str(s.note)}</dd> : null}
-              </div>
-            ))}
-          </dl>
-          {str(data.footnote) ? (
-            <>
-              <Rule className="my-6 text-ink opacity-30" />
-              <p className="text-sm text-ink-soft">{str(data.footnote)}</p>
-            </>
-          ) : null}
-        </div>
-      </Plate>
+      <Intro>{str(data.intro)}</Intro>
+
+      {/*
+        The cell is sized off the widest figure the school actually files —
+        "97.22%" — rather than off a column count, so a sixth statistic wraps to
+        a second row instead of squeezing the percentage past its rule.
+      */}
+      {stats.length ? (
+        <dl className="mt-[clamp(2rem,4vw,3.25rem)] grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] border-t border-l border-paper-shade">
+          {stats.map((s, i) => (
+            <div
+              key={`${str(s.label)}-${i}`}
+              className="border-r border-b border-paper-shade bg-white px-6 py-7"
+            >
+              <dd className="display tabular text-[clamp(2rem,3.6vw,3rem)] leading-none tracking-[-0.03em] text-navy-900">
+                {str(s.value)}
+              </dd>
+              <dt className="chart-label mt-3.5 text-ink">{str(s.label)}</dt>
+              {str(s.note) ? (
+                <dd className="mt-1 text-[0.88rem] text-ink-faint">{str(s.note)}</dd>
+              ) : null}
+            </div>
+          ))}
+        </dl>
+      ) : null}
+
+      {str(data.footnote) ? (
+        <p className="mt-5 max-w-[80ch] text-[0.85rem] leading-[1.6] on-ground-faint">
+          {str(data.footnote)}
+        </p>
+      ) : null}
+
+      <Buttons items={links(data.ctas)} className="mt-8" />
     </div>
   );
 }
@@ -47,22 +63,27 @@ export function FactTable({ data }: SectionProps) {
   if (!entries.length) return null;
 
   return (
-    <Plate>
+    <div>
       {str(data.plateTitle) || str(data.plateNumber) ? (
-        <TitleBand plate={str(data.plateNumber) || undefined}>{str(data.plateTitle)}</TitleBand>
+        <p className="chart-label mb-4 on-ground-accent">
+          {[str(data.plateTitle), str(data.plateNumber)].filter(Boolean).join(" · ")}
+        </p>
       ) : null}
-      <dl className="divide-y-2 divide-paper-shade">
+
+      <dl className="border-t border-rule-strong">
         {entries.map((r, i) => (
           <div
             key={`${str(r.label)}-${i}`}
-            className="grid gap-1 px-5 py-3 sm:grid-cols-[1fr_1.2fr] sm:gap-6 sm:py-3.5"
+            className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-paper-shade py-4"
           >
-            <dt className="chart-label opacity-65">{str(r.label)}</dt>
-            <dd className="text-sm font-semibold">{str(r.value)}</dd>
+            <dt className="text-[0.97rem] on-ground-faint">{str(r.label)}</dt>
+            <dd className="tabular text-[0.97rem] font-semibold on-ground sm:text-right">
+              {str(r.value)}
+            </dd>
           </div>
         ))}
       </dl>
-    </Plate>
+    </div>
   );
 }
 
@@ -84,16 +105,25 @@ export function DataTable({ data }: SectionProps) {
   if (!columns.length || !body.length) return null;
 
   return (
-    <Plate>
+    <div>
       {str(data.plateTitle) || str(data.plateNumber) ? (
-        <TitleBand plate={str(data.plateNumber) || undefined}>{str(data.plateTitle)}</TitleBand>
+        <p className="chart-label mb-4 on-ground-accent">
+          {[str(data.plateTitle), str(data.plateNumber)].filter(Boolean).join(" · ")}
+        </p>
       ) : null}
+
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[26rem] border-collapse text-left">
+        <table className="w-full min-w-[30rem] border-collapse text-left">
           <thead>
-            <tr className="border-b-2 border-ink">
-              {columns.map((c) => (
-                <th key={c} scope="col" className="chart-label px-5 py-3">
+            <tr>
+              {columns.map((c, n) => (
+                <th
+                  key={c}
+                  scope="col"
+                  className={`chart-label border-b-2 border-ink pb-3 on-ground ${
+                    n === 0 ? "pr-4" : "px-4 last:pr-0"
+                  }`}
+                >
                   {c}
                 </th>
               ))}
@@ -101,21 +131,29 @@ export function DataTable({ data }: SectionProps) {
           </thead>
           <tbody>
             {body.map((cells, i) => (
-              <tr key={i} className="border-b-2 border-paper-shade last:border-0">
+              <tr key={i}>
                 {columns.map((_, n) => {
                   const value = cells[n] ?? "";
-                  const content = value ? (
-                    <span className="tabular">{value}</span>
-                  ) : (
-                    <span className="chart-label text-ink-soft">Awaiting school figures</span>
-                  );
-                  return n === 0 ? (
-                    <th key={n} scope="row" className="tabular px-5 py-3.5 font-semibold">
-                      {value || content}
-                    </th>
-                  ) : (
-                    <td key={n} className="px-5 py-3.5">
-                      {content}
+                  const pad = n === 0 ? "pr-4" : "px-4 last:pr-0";
+
+                  if (n === 0) {
+                    return (
+                      <th
+                        key={n}
+                        scope="row"
+                        className={`border-b border-paper-shade py-4 text-left text-[1.02rem] font-semibold on-ground ${pad}`}
+                      >
+                        {value}
+                      </th>
+                    );
+                  }
+                  return (
+                    <td key={n} className={`border-b border-paper-shade py-4 ${pad}`}>
+                      {value ? (
+                        <span className="tabular text-[0.97rem] on-ground-soft">{value}</span>
+                      ) : (
+                        <span className="chart-label on-ground-faint">Awaiting school figures</span>
+                      )}
                     </td>
                   );
                 })}
@@ -124,10 +162,38 @@ export function DataTable({ data }: SectionProps) {
           </tbody>
         </table>
       </div>
+
       {str(data.note) ? (
-        <p className="border-t-2 border-paper-shade px-5 py-3 text-sm text-ink-soft">{str(data.note)}</p>
+        <p className="mt-4 text-[0.85rem] leading-[1.6] on-ground-faint">{str(data.note)}</p>
       ) : null}
-    </Plate>
+    </div>
+  );
+}
+
+/** One column of a fee schedule. */
+function FeeColumn({
+  heading,
+  entries,
+}: {
+  heading: string;
+  entries: Record<string, unknown>[];
+}) {
+  if (!entries.length) return null;
+  return (
+    <div className="flex-1 basis-[18rem]">
+      {heading ? <p className="chart-label mb-3.5 on-ground-accent">{heading}</p> : null}
+      <dl className="border-t border-rule-strong">
+        {entries.map((f, i) => (
+          <div
+            key={`${str(f.label)}-${i}`}
+            className="flex justify-between gap-5 border-b border-paper-shade py-4"
+          >
+            <dt className="text-[0.97rem] on-ground-faint">{str(f.label)}</dt>
+            <dd className="tabular text-[0.97rem] font-semibold on-ground">{str(f.amount)}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 
@@ -137,65 +203,50 @@ export function FeesPanel({ data }: SectionProps) {
   const conditions = rows(data.conditions).map((c) => str(c.text)).filter(Boolean);
 
   return (
-    <Plate>
+    <div>
       {str(data.plateTitle) || str(data.plateNumber) ? (
-        <TitleBand plate={str(data.plateNumber) || undefined}>{str(data.plateTitle)}</TitleBand>
-      ) : null}
-
-      <div className="grid gap-0 md:grid-cols-2 md:divide-x-2 md:divide-paper-shade">
-        <div className="p-5 sm:p-7">
-          <h3 className="chart-label mb-4 opacity-65">{str(data.oneTimeHeading)}</h3>
-          <dl className="space-y-2.5">
-            {oneTime.map((f, i) => (
-              <div key={`${str(f.label)}-${i}`} className="flex justify-between gap-6">
-                <dt>{str(f.label)}</dt>
-                <dd className="tabular font-semibold">{str(f.amount)}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-
-        <div className="border-t-2 border-paper-shade p-5 sm:p-7 md:border-t-0">
-          <h3 className="chart-label mb-4 opacity-65">{str(data.instalmentHeading)}</h3>
-          <dl className="space-y-2.5">
-            {instalments.map((f, i) => (
-              <div key={`${str(f.label)}-${i}`} className="flex justify-between gap-6">
-                <dt>{str(f.label)}</dt>
-                <dd className="tabular font-semibold">{str(f.amount)}</dd>
-              </div>
-            ))}
-          </dl>
-          {str(data.total) ? (
-            <>
-              <Rule className="my-4 text-ink opacity-30" />
-              <div className="flex items-baseline justify-between gap-6">
-                <span className="chart-label">{str(data.totalLabel, "Annual total")}</span>
-                <span className="display tabular text-2xl">{str(data.total)}</span>
-              </div>
-            </>
+        <div className="mb-8 flex flex-wrap items-baseline justify-between gap-x-10 gap-y-3">
+          <SectionHeading>{str(data.plateTitle)}</SectionHeading>
+          {str(data.plateNumber) ? (
+            <p className="chart-label on-ground-faint">{str(data.plateNumber)}</p>
           ) : null}
         </div>
+      ) : null}
+
+      <div className="flex flex-wrap items-start gap-x-[clamp(2rem,5vw,4.5rem)] gap-y-9">
+        <FeeColumn heading={str(data.oneTimeHeading)} entries={oneTime} />
+        <FeeColumn heading={str(data.instalmentHeading)} entries={instalments} />
+
+        {str(data.total) ? (
+          <div className="flex-1 basis-[15rem] border-t-2 border-ink pt-5">
+            <p className="chart-label on-ground">{str(data.totalLabel, "Annual total")}</p>
+            <p className="display tabular mt-3 text-[clamp(2.25rem,4.2vw,3.25rem)] leading-none tracking-[-0.03em] text-navy-900">
+              {str(data.total)}
+            </p>
+            {str(data.note) ? (
+              <p className="mt-3 text-[0.92rem] leading-[1.65] on-ground-faint">{str(data.note)}</p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       {conditions.length ? (
-        <div className="border-t-2 border-paper-shade px-5 py-4">
-          <h3 className="chart-label mb-2 opacity-65">Please note</h3>
-          <ul className="space-y-1.5">
-            {conditions.map((c) => (
-              <li key={c} className="flex gap-2.5 text-sm text-ink-soft">
-                <span className="mt-1 flex-none text-alert">
-                  <Icon name="chevron" size={11} />
-                </span>
-                {c}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ul className="mt-[clamp(2rem,4vw,3rem)] grid gap-x-[clamp(1.75rem,4vw,3.5rem)] sm:grid-cols-2 lg:grid-cols-3">
+          {conditions.map((c) => (
+            <li
+              key={c}
+              className="flex gap-3.5 border-t border-rule-strong py-4 text-[0.95rem] leading-[1.65] on-ground-soft"
+            >
+              <span aria-hidden="true" className="mt-[0.55em] h-2 w-2 flex-none bg-alert" />
+              {c}
+            </li>
+          ))}
+        </ul>
       ) : null}
 
-      {str(data.note) ? (
-        <p className="border-t-2 border-paper-shade px-5 py-3 text-sm text-ink-soft">{str(data.note)}</p>
+      {!str(data.total) && str(data.note) ? (
+        <p className="mt-5 text-[0.88rem] leading-[1.6] on-ground-faint">{str(data.note)}</p>
       ) : null}
-    </Plate>
+    </div>
   );
 }

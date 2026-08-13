@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   VENUS WORLD SCHOOLS — "The Wall Chart"
-   The offset-printed Indian classroom chart. White stock under a blueprint
-   grid, institutional blue as the action ink, amber as the section wash.
-   Flat spot inks, thick keylines, numbered callouts on leader lines.
+   VENUS WORLD SCHOOLS — "The Filed Record"
+   The school prospectus set as a printed document rather than a brochure.
+   White stock, hairline rules, a serif that behaves like a masthead, and a
+   narrow tracked sans reserved for labels. Nothing is boxed unless the box
+   carries meaning; nothing is coloured unless the colour codes something.
 
    COLOUR IS A GROUND CONTRACT, NOT A PER-ELEMENT DECISION.
    Every band declares what it is — .wall, .ground-amber, .ground-ink, .plate —
@@ -13,15 +14,19 @@
      --on-ground         primary text
      --on-ground-soft    body and secondary text
      --on-ground-faint   labels, meta, captions
-     --on-ground-accent  the amber role, at a value legible on this ground
+     --on-ground-accent  the accent role, at a value legible on this ground
      --ground-line       hairlines, rules, ghost-button borders
      --plate-bg          what a plate laid on this ground is printed on
 
    Components then say what a thing *is* (.on-ground-soft) rather than what
    colour it happens to be, so a band can be recoloured — or moved from white
-   to amber to blue — without touching a single component. The button and
-   focus inks ride along the same contract: blue on light grounds, saffron on
-   blue ones, because a control has to contrast with what it sits on.
+   to the wash to navy — without touching a single component. The button and
+   focus inks ride along the same contract: navy on light grounds, saffron on
+   navy ones, because a control has to contrast with what it sits on.
+
+   The ground names `amber` / `amber-deep` are what the panel has been writing
+   into stored pages since before this redesign, so they keep their names and
+   change only their value — a light wash and a deeper one.
 
    Component classes live in @layer components so Tailwind utilities written on
    an element (lg:hidden, !px-3) always win over them.
@@ -29,60 +34,67 @@
 
 @theme {
   /* --- Inks. Ink is the type; institutional blue is the action. */
-  --color-ink: #0a1826;
-  --color-ink-soft: #24384c;
-  /* Meta and captions on white — 6.4:1, so it survives at label sizes. */
-  --color-ink-faint: #4a627a;
+  --color-ink: #101820;
+  --color-ink-soft: #40505f;
+  /* Meta and captions on white — 5.9:1, so it survives at label sizes. */
+  --color-ink-faint: #5a6a78;
 
   --color-navy-950: #001631;
   --color-navy-900: #002147;
   --color-navy-850: #04294f;
-  --color-navy-800: #06305f;
+  /* The hairline drawn *on* navy: menu dividers, ghost-button borders. */
+  --color-navy-800: #123a63;
+  --color-navy-750: #26476b;
   --color-navy-700: #0b4b8f;
   --color-navy-600: #1663b0;
-  --color-navy-300: #8fb4dc;
-  --color-navy-200: #bed4ec;
-  --color-navy-100: #dce8f5;
+  --color-navy-300: #7e9cbb;
+  --color-navy-200: #a9c2da;
+  --color-navy-100: #c8d8ea;
 
   --color-saffron: #ffab1f;
-  --color-saffron-deep: #d97d00;
+  --color-saffron-bright: #ffc457;
   /* Saffron on white is 1.9:1. This is the amber that survives a light
      ground — 6.8:1 — for any saffron-coded text, marker or glyph. */
   --color-amber-ink: #8a4b00;
   --color-saffron-100: #ffeccb;
 
-  /* --- Section washes. Amber carries a band without shouting; ink stays at
-     15.9:1 on the lighter one and 13.4:1 on the deeper. */
-  --color-amber-wash: #fff4e2;
-  --color-amber-wash-deep: #ffe4bd;
-  --color-amber-line: #e8d6b8;
+  /* --- Section washes. Cool, barely there: the band is told apart by its
+     rules and its spacing, not by a colour field. */
+  --color-amber-wash: #f6f8fa;
+  --color-amber-wash-deep: #eef2f6;
 
-  --color-paper: #f4efe3;
-  --color-paper-bright: #f7f9fc;
-  /* The hairline inside a plate. Cool, because plates are printed on white. */
-  --color-paper-shade: #dde4ec;
-  --color-hairline: #cfd8e2;
+  /* Paper is literal white here; `text-paper` is what sets on navy. */
+  --color-paper: #ffffff;
+  /* Row rules inside a plate or a table. */
+  --color-paper-shade: #dde3e9;
+  --color-hairline: #e3e7ec;
+  /* The heavier of the two light rules — opens a list, closes a table. */
+  --color-rule-strong: #cdd6df;
+  --color-field-line: #c9d2db;
+  --color-image-bed: #eef1f4;
 
   --color-verify: #1b6e4a;
+  --color-verify-wash: #e8f2ec;
   --color-alert: #c8321e;
 
-  /* --- Faces */
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  /* --- Faces. The serif is the voice; the narrow sans is the filing label. */
+  --font-display: var(--font-source-serif), Georgia, "Times New Roman", serif;
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   --font-label: var(--font-archivo-narrow), ui-sans-serif, system-ui, sans-serif;
   --font-deva: var(--font-tiro), serif;
 
-  /* --- Chart measures */
-  --keyline: 2px;
-  --radius-plate: 2px;
+  /* --- Printed measures. A hairline, and no rounding anywhere. */
+  --keyline: 1px;
+  --radius-plate: 0px;
 
   --ease-chart: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
   :root {
-    --gutter: clamp(1.25rem, 5vw, 4.5rem);
-    --plate-max: 78rem;
+    --gutter: clamp(1.25rem, 4vw, 3.5rem);
+    --plate-max: 77.5rem; /* 1240px */
+    --band: clamp(4rem, 8vw, 7.25rem);
     color-scheme: light;
 
     /* The white ground's contract, declared at the root so anything rendered
@@ -91,13 +103,14 @@
     --on-ground: var(--color-ink);
     --on-ground-soft: var(--color-ink-soft);
     --on-ground-faint: var(--color-ink-faint);
-    --on-ground-accent: var(--color-amber-ink);
+    --on-ground-accent: var(--color-navy-700);
     --ground-line: var(--color-hairline);
     --plate-bg: #ffffff;
 
-    --btn-bg: var(--color-navy-700);
+    --btn-bg: var(--color-navy-900);
     --btn-fg: #ffffff;
-    --btn-bg-hover: var(--color-navy-600);
+    --btn-bg-hover: var(--color-navy-700);
+    --btn-ghost-line: var(--color-field-line);
     --focus-ring: var(--color-navy-700);
   }
 
@@ -115,7 +128,7 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 1rem;
-    line-height: 1.65;
+    line-height: 1.7;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
@@ -123,9 +136,8 @@
 
   /* Focus: a register mark in whichever ink the current ground can show. */
   :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
-    outline: 3px solid var(--focus-ring);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
-    border-radius: 1px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -144,84 +156,35 @@
 
 @layer components {
   /* --- Grounds ----------------------------------------------------------
-     Each publishes the contract above. The blueprint grid runs through all of
-     them at the same measure, in whichever ink that ground can carry, so the
-     chart reads as one continuous sheet from header to footer. */
+     Four grounds and no gradients. What separates one band from the next is a
+     hairline and a change of tint, so the page reads as a continuous sheet
+     with sections ruled off rather than as a stack of coloured panels. */
 
-  .wall,
-  .ground-amber,
-  .ground-amber-deep,
-  .ground-ink {
-    position: relative;
-    --grid-size: 2.25rem;
-
-    /* Four layers, topmost first: the two grid rules, a veil, and the mark
-       the veil is there to fade.
-
-       The veil is how the watermark is made faint. A background layer has no
-       opacity of its own, and fading one with a pseudo-element would mean an
-       absolutely-positioned box sitting over content that is not itself
-       positioned — so the mark is printed at full strength and then buried
-       under a near-opaque wash of the ground's own colour. The grid stays
-       above the wash, and so keeps its measure.
-
-       A ground that sets no --mark-image leaves both slots at `none`. */
-    background-image:
-      linear-gradient(to right, var(--grid-ink) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-ink) 1px, transparent 1px),
-      var(--mark-veil, none),
-      var(--mark-image, none);
-    background-size:
-      var(--grid-size) var(--grid-size),
-      var(--grid-size) var(--grid-size),
-      auto,
-      var(--mark-size, auto);
-    background-position: 0 0, 0 0, 0 0, var(--mark-position, 0 0);
-    background-repeat: repeat, repeat, no-repeat, no-repeat;
-  }
-
-  /* The page itself: literal white under a faint blue grid, with the school's
-     emblem watermarked into the sheet at about 4%. It bleeds off the right
-     edge and is centred vertically, so a short band shows a slice of it rather
-     than a clipped top. Under the grid, never over it. */
   .wall {
-    --grid-ink: color-mix(in srgb, var(--color-navy-600) 11%, transparent);
     background-color: #ffffff;
     color: var(--color-ink);
-
-    --mark-image: url("/logo-mark.png");
-    --mark-veil: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95));
-    --mark-size: min(26rem, 48vw) auto;
-    --mark-position: right -3rem center;
 
     --on-ground: var(--color-ink);
     --on-ground-soft: var(--color-ink-soft);
     --on-ground-faint: var(--color-ink-faint);
-    --on-ground-accent: var(--color-amber-ink);
+    --on-ground-accent: var(--color-navy-700);
     --ground-line: var(--color-hairline);
     --plate-bg: #ffffff;
   }
 
-  /* A finer measure. Only the grid tightens — the watermark keeps its size,
-     which is why the grid is sized off a variable rather than restated here. */
-  .wall-dense {
-    --grid-size: 0.75rem;
-  }
-
-  /* The section wash. Saffron keylines top and bottom so the band is a
-     printed register, not a colour-fill. */
+  /* The section wash, ruled top and bottom. Cool enough that black type keeps
+     15.1:1 on it, distinct enough that the band is legibly a band. */
   .ground-amber,
   .ground-amber-deep {
-    --grid-ink: color-mix(in srgb, var(--color-saffron-deep) 9%, transparent);
     color: var(--color-ink);
-    border-block: var(--keyline) solid var(--color-saffron);
+    border-block: 1px solid var(--color-hairline);
 
     --on-ground: var(--color-ink);
     --on-ground-soft: var(--color-ink-soft);
-    --on-ground-faint: #6b573a;
-    --on-ground-accent: var(--color-amber-ink);
-    --ground-line: var(--color-amber-line);
-    /* A plate laid on amber is printed white, so it lifts off the wash. */
+    --on-ground-faint: var(--color-ink-faint);
+    --on-ground-accent: var(--color-navy-700);
+    --ground-line: #dde3e9;
+    /* A plate laid on the wash is printed white, so it lifts off it. */
     --plate-bg: #ffffff;
   }
 
@@ -231,34 +194,33 @@
 
   .ground-amber-deep {
     background-color: var(--color-amber-wash-deep);
-    --on-ground-faint: #6a5027;
-    --ground-line: #e3c89f;
+    --ground-line: #d7dfe8;
   }
 
-  /* The blue ground survives as chrome — header, footer, the panel — where a
-     blue button would vanish, so the action ink reverts to saffron.
+  /* The navy ground carries the chrome — header strip, footer, the closing
+     call to action — where a navy button would vanish, so the action ink
+     reverts to saffron.
 
      `.ground-ink` paints it. `.on-ink` only declares the contract, for chrome
-     that paints its own background: the header is translucent over the page
-     and would lose its backdrop blur under an opaque parent. */
+     that paints its own background. */
   .ground-ink {
-    --grid-ink: color-mix(in srgb, var(--color-navy-300) 7%, transparent);
     background-color: var(--color-navy-900);
-    color: var(--color-paper);
+    color: #ffffff;
   }
 
   .ground-ink,
   .on-ink {
-    --on-ground: var(--color-paper);
+    --on-ground: #ffffff;
     --on-ground-soft: var(--color-navy-100);
     --on-ground-faint: var(--color-navy-300);
     --on-ground-accent: var(--color-saffron);
-    --ground-line: var(--color-navy-700);
-    --plate-bg: var(--color-paper);
+    --ground-line: var(--color-navy-750);
+    --plate-bg: #ffffff;
 
     --btn-bg: var(--color-saffron);
     --btn-fg: var(--color-ink);
-    --btn-bg-hover: #ffbb47;
+    --btn-bg-hover: var(--color-saffron-bright);
+    --btn-ghost-line: #3a5b7f;
     --focus-ring: var(--color-saffron);
   }
 
@@ -285,7 +247,7 @@
     color: var(--ground-line);
   }
 
-  /* Hover goes to the accent on every ground: amber on white, saffron on blue.
+  /* Hover goes to the accent on every ground: navy on white, saffron on navy.
      These exist because `hover:` and `group-hover:` are Tailwind variants and
      cannot be pointed at a component class. */
   .hover-accent {
@@ -296,14 +258,25 @@
     color: var(--on-ground-accent);
   }
 
-  /* --- Type ------------------------------------------------------------ */
+  /* --- Type ------------------------------------------------------------
+     One serif, two weights. `.display` is the masthead weight, set light and
+     large; `.display-sm` is the same face tightened for a card or list title,
+     where 400 would go weedy. */
 
   .display {
     font-family: var(--font-display);
-    font-weight: 800;
-    line-height: 0.94;
-    letter-spacing: -0.03em;
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
     text-wrap: balance;
+  }
+
+  .display-sm {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.28;
+    letter-spacing: -0.012em;
+    text-wrap: pretty;
   }
 
   .deva {
@@ -312,18 +285,30 @@
     font-weight: 400;
   }
 
-  /* Chart labels: narrow, tracked, uppercase — printed beside a leader line. */
+  /* The filing label: narrow, tracked, uppercase — printed beside a rule. */
   .chart-label {
     font-family: var(--font-label);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-size: 0.78rem;
-    line-height: 1.45;
+    letter-spacing: 0.15em;
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+
+  /* The eyebrow that opens a section, in the action ink. */
+  .eyebrow {
+    font-family: var(--font-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: var(--on-ground-accent);
   }
 
   .prose-chart {
-    max-width: 68ch;
+    max-width: 62ch;
+    text-wrap: pretty;
   }
 
   .prose-chart p {
@@ -335,13 +320,16 @@
   }
 
   /* --- Editor copy ------------------------------------------------------
-     Everything the panel's writing tools can emit, given the chart's
+     Everything the panel's writing tools can emit, given this document's
      typography. Colour comes from the ground contract, so the same HTML sets
-     correctly on a white page, an amber band or a blue plate. */
+     correctly on white, on the wash and on a navy plate. */
 
   .rich {
-    max-width: 68ch;
-    font-size: 1.05rem;
+    max-width: 66ch;
+    font-size: 1.0625rem;
+    line-height: 1.78;
+    color: var(--on-ground-soft);
+    text-wrap: pretty;
   }
 
   .rich > * + * {
@@ -352,66 +340,98 @@
   .rich h3,
   .rich h4 {
     font-family: var(--font-display);
-    font-weight: 800;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.018em;
+    color: var(--on-ground);
     margin-top: 1.9em;
     text-wrap: balance;
   }
 
   .rich h2 {
-    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
   }
   .rich h3 {
-    font-size: clamp(1.25rem, 2.4vw, 1.55rem);
+    font-size: clamp(1.3rem, 2.4vw, 1.6rem);
+    font-weight: 600;
   }
   .rich h4 {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
+    font-weight: 600;
   }
 
   .rich :is(h2, h3, h4) + * {
     margin-top: 0.6em;
   }
 
-  .rich a {
-    text-decoration: underline;
-    text-underline-offset: 2px;
+  .rich strong {
+    color: var(--on-ground);
     font-weight: 600;
   }
 
+  .rich a {
+    color: var(--on-ground-accent);
+    border-bottom: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+    font-weight: 500;
+  }
+
+  .rich a:hover {
+    border-bottom-color: currentColor;
+  }
+
   .rich :is(ul, ol) {
-    padding-left: 1.4em;
+    padding-left: 1.3em;
   }
 
   .rich ul {
-    list-style: square;
+    list-style: none;
+    padding-left: 0;
   }
+
+  .rich ul > li {
+    position: relative;
+    padding-left: 1.4em;
+  }
+
+  /* The square bullet the printed lists use, drawn rather than typed. */
+  .rich ul > li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.68em;
+    width: 0.5em;
+    height: 0.5em;
+    background-color: var(--on-ground-accent);
+  }
+
   .rich ol {
     list-style: decimal;
   }
 
   .rich li + li {
-    margin-top: 0.4em;
+    margin-top: 0.5em;
   }
 
-  .rich li::marker {
+  .rich ol li::marker {
     color: var(--on-ground-accent);
+    font-family: var(--font-label);
     font-weight: 700;
   }
 
   .rich blockquote {
-    border-left: var(--keyline) solid var(--color-saffron);
-    padding-left: 1.1em;
-    font-size: 1.15em;
-    line-height: 1.5;
+    border-left: 2px solid var(--color-saffron);
+    padding-left: 1.15em;
+    font-family: var(--font-display);
+    font-size: 1.3em;
+    line-height: 1.45;
+    color: var(--on-ground);
   }
 
   .rich :is(img, video, iframe) {
     display: block;
     width: 100%;
     height: auto;
-    border: var(--keyline) solid currentColor;
-    border-radius: var(--radius-plate);
+    border: 1px solid var(--ground-line);
   }
 
   .rich iframe {
@@ -419,7 +439,7 @@
   }
 
   .rich figure {
-    margin-block: 1.6em;
+    margin-block: 1.8em;
   }
 
   .rich figcaption {
@@ -427,9 +447,9 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    font-size: 0.72rem;
-    margin-top: 0.6em;
-    opacity: 0.75;
+    font-size: 0.7rem;
+    color: var(--on-ground-faint);
+    margin-top: 0.7em;
   }
 
   .rich :is(code, pre) {
@@ -440,7 +460,7 @@
   .rich pre {
     overflow-x: auto;
     padding: 1em 1.15em;
-    border: var(--keyline) solid currentColor;
+    border: 1px solid var(--ground-line);
   }
 
   .rich table {
@@ -451,229 +471,219 @@
   }
 
   .rich :is(th, td) {
-    border: 1px solid currentColor;
-    padding: 0.55em 0.8em;
+    border-bottom: 1px solid var(--color-paper-shade);
+    padding: 0.85em 1em 0.85em 0;
     text-align: left;
   }
 
   .rich th {
     font-family: var(--font-label);
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    font-size: 0.7rem;
+    color: var(--on-ground);
+    border-bottom: 2px solid var(--color-ink);
   }
 
   .rich hr {
     border: 0;
-    height: 5px;
-    border-top: 1px solid currentColor;
-    border-bottom: 3px solid currentColor;
-    opacity: 0.4;
-    margin-block: 2em;
+    border-top: 1px solid var(--ground-line);
+    margin-block: 2.4em;
   }
 
-  /* --- The plate: a sheet of chart stock, keylined, laid on the grid -----
-     The plate is printed on whatever the ground says, and the grid stops at
-     its edge — which is what makes it read as a separate sheet on a white
-     page rather than a box drawn on one. */
+  /* --- The plate --------------------------------------------------------
+     A bordered block, used where the border means something: a form, a
+     summary card, a table that has to be told apart from the page. Hairline,
+     square, unshadowed — a ruled-off region of the same sheet, not a card
+     floating above it. */
 
   .plate {
     position: relative;
     background-color: var(--plate-bg);
     color: var(--color-ink);
-    border: var(--keyline) solid var(--color-ink);
-    border-radius: var(--radius-plate);
-    box-shadow:
-      0 1px 0 0 color-mix(in srgb, var(--color-ink) 45%, transparent),
-      0 16px 30px -20px rgb(10 24 38 / 0.32);
+    border: 1px solid var(--color-hairline);
+    border-radius: 0;
 
     --on-ground: var(--color-ink);
     --on-ground-soft: var(--color-ink-soft);
     --on-ground-faint: var(--color-ink-faint);
-    --on-ground-accent: var(--color-amber-ink);
+    --on-ground-accent: var(--color-navy-700);
     --ground-line: var(--color-paper-shade);
 
-    --btn-bg: var(--color-navy-700);
+    --btn-bg: var(--color-navy-900);
     --btn-fg: #ffffff;
-    --btn-bg-hover: var(--color-navy-600);
+    --btn-bg-hover: var(--color-navy-700);
+    --btn-ghost-line: var(--color-field-line);
     --focus-ring: var(--color-navy-700);
   }
 
-  /* Paper tooth — a very faint printed grain, never a gradient sheen. */
-  .plate::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    opacity: 0.5;
-    background-image: radial-gradient(
-      circle at 1px 1px,
-      color-mix(in srgb, var(--color-ink) 8%, transparent) 0.5px,
-      transparent 0
-    );
-    background-size: 4px 4px;
-  }
-
   .plate-dark {
-    background-color: var(--color-navy-850);
-    color: var(--color-paper);
-    /* The ink keyline, not a navy one: a dark plate is often set beside a
-       white one, and the pair has to be cut from the same sheet. */
-    border-color: var(--color-ink);
+    background-color: var(--color-navy-900);
+    color: #ffffff;
+    border-color: var(--color-navy-900);
 
-    --on-ground: var(--color-paper);
+    --on-ground: #ffffff;
     --on-ground-soft: var(--color-navy-100);
     --on-ground-faint: var(--color-navy-300);
     --on-ground-accent: var(--color-saffron);
-    --ground-line: var(--color-navy-700);
+    --ground-line: var(--color-navy-750);
 
     --btn-bg: var(--color-saffron);
     --btn-fg: var(--color-ink);
-    --btn-bg-hover: #ffbb47;
+    --btn-bg-hover: var(--color-saffron-bright);
+    --btn-ghost-line: #3a5b7f;
     --focus-ring: var(--color-saffron);
   }
 
-  .plate-dark::after {
-    opacity: 0.28;
-    background-image: radial-gradient(
-      circle at 1px 1px,
-      color-mix(in srgb, var(--color-navy-100) 14%, transparent) 0.5px,
-      transparent 0
-    );
-  }
-
-  /* --- Title band: the printed header strip across a chart --------------- */
+  /* --- Title strip: the label that opens a plate or a ruled block -------- */
 
   .title-band {
-    background-color: var(--color-saffron);
-    color: var(--color-ink);
-    border-bottom: var(--keyline) solid var(--color-ink);
+    background-color: transparent;
+    color: var(--color-navy-700);
+    border-bottom: 1px solid var(--color-hairline);
   }
 
   .title-band-navy {
-    background-color: var(--color-navy-800);
-    color: var(--color-paper);
-    border-bottom: var(--keyline) solid var(--color-saffron);
+    background-color: transparent;
+    color: var(--color-saffron);
+    border-bottom: 1px solid var(--color-navy-750);
   }
 
-  /* --- Rules: the double hairline that separates chart sections ---------- */
+  /* --- Rules ------------------------------------------------------------
+     One hairline, drawn in currentColor so a caller can retint it. The heavier
+     2px ink rule that opens a table or a lead column is written where it is
+     used, because it is a structural mark rather than a separator. */
 
   .rule-double {
     border: 0;
-    height: 5px;
     border-top: 1px solid currentColor;
-    border-bottom: 3px solid currentColor;
-    opacity: 0.85;
+    height: 0;
   }
 
-  /* --- Callout numbers: the circled digit at a leader line's end --------- */
+  /* --- Index numerals ---------------------------------------------------
+     The printed list index: 01, 02, 03 in the narrow face, set in the action
+     ink and aligned on tabular figures. No circle — the number is a filing
+     mark, not a badge. */
 
   .callout-num {
-    display: inline-grid;
-    place-items: center;
+    display: inline-block;
     flex: none;
-    width: 1.85rem;
-    height: 1.85rem;
-    border-radius: 999px;
-    border: var(--keyline) solid currentColor;
     font-family: var(--font-label);
     font-weight: 700;
-    font-size: 0.85rem;
-    line-height: 1;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    letter-spacing: 0.06em;
     font-variant-numeric: tabular-nums;
-  }
-
-  .callout-num-filled {
-    background-color: var(--color-saffron);
-    color: var(--color-ink);
-    border-color: var(--color-ink);
+    color: var(--on-ground-accent);
   }
 
   /* --- Controls ---------------------------------------------------------
-     Every button reads its ink from the ground: institutional blue on white
-     and amber, saffron on blue. */
+     Square, uppercase, tracked. Every button reads its ink from the ground:
+     navy on white and the wash, saffron on navy. */
 
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
-    padding: 0.85rem 1.5rem;
-    border: var(--keyline) solid var(--color-ink);
-    border-radius: var(--radius-plate);
+    padding: 1rem 1.6rem;
+    border: 1px solid transparent;
+    border-radius: 0;
     font-family: var(--font-label);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.8rem;
+    letter-spacing: 0.13em;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    white-space: nowrap;
     cursor: pointer;
     transition:
-      transform 0.18s var(--ease-chart),
-      box-shadow 0.18s var(--ease-chart),
-      background-color 0.18s var(--ease-chart);
+      background-color 0.18s var(--ease-chart),
+      border-color 0.18s var(--ease-chart),
+      color 0.18s var(--ease-chart);
   }
 
   .btn-primary {
     background-color: var(--btn-bg);
     color: var(--btn-fg);
-    box-shadow: 0 2px 8px -2px rgb(10 24 38 / 0.35);
+    border-color: var(--btn-bg);
   }
 
   .btn-primary:hover {
     background-color: var(--btn-bg-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px -6px rgb(10 24 38 / 0.45);
-  }
-
-  .btn-primary:active {
-    transform: translateY(1px);
-    box-shadow: 0 1px 4px -1px rgb(10 24 38 / 0.4);
+    border-color: var(--btn-bg-hover);
+    color: var(--btn-fg);
   }
 
   .btn-ghost {
     background-color: transparent;
     color: var(--on-ground);
-    border-color: var(--on-ground-faint);
+    border-color: var(--btn-ghost-line);
   }
 
   .btn-ghost:hover {
-    background-color: color-mix(in srgb, var(--on-ground) 8%, transparent);
-    border-color: var(--on-ground);
+    border-color: var(--on-ground-accent);
+    color: var(--on-ground-accent);
   }
 
   .btn-ink {
-    background-color: var(--color-ink);
+    background-color: var(--color-navy-900);
     color: #ffffff;
-    border-color: var(--color-ink);
-    box-shadow: 0 2px 8px -2px rgb(10 24 38 / 0.4);
+    border-color: var(--color-navy-900);
   }
 
   .btn-ink:hover {
-    background-color: var(--color-navy-900);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px -6px rgb(10 24 38 / 0.5);
+    background-color: var(--color-navy-700);
+    border-color: var(--color-navy-700);
+    color: #ffffff;
   }
 
   .btn:disabled {
-    opacity: 0.55;
+    opacity: 0.5;
     cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
+  }
+
+  /* The underscored text action — a link that carries a section, not a page. */
+  .btn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding-bottom: 0.32rem;
+    border-bottom: 1.5px solid currentColor;
+    font-family: var(--font-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    color: var(--on-ground-accent);
+    transition: color 0.15s var(--ease-chart);
+  }
+
+  .btn-link:hover {
+    color: var(--color-navy-900);
+  }
+
+  .on-ink .btn-link:hover,
+  .plate-dark .btn-link:hover,
+  .ground-ink .btn-link:hover {
+    color: var(--color-saffron-bright);
   }
 
   /* --- Fields: the printed enquiry slip --------------------------------- */
 
   .field {
     width: 100%;
-    background-color: var(--color-paper-bright);
+    background-color: #ffffff;
     color: var(--color-ink);
-    border: var(--keyline) solid var(--color-ink);
-    border-radius: var(--radius-plate);
-    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--color-field-line);
+    border-radius: 0;
+    padding: 0.8rem 0.875rem;
     font-family: var(--font-sans);
     font-size: 1rem;
-    line-height: 1.4;
+    line-height: 1.5;
+    transition: border-color 0.15s var(--ease-chart);
   }
 
   .field::placeholder {
@@ -682,12 +692,17 @@
   }
 
   .field:hover {
-    background-color: #fff;
+    border-color: #aebbc7;
+  }
+
+  .field:focus {
+    border-color: var(--color-navy-700);
+    outline: 1px solid var(--color-navy-700);
+    outline-offset: -2px;
   }
 
   .field[aria-invalid="true"] {
     border-color: var(--color-alert);
-    background-color: #fdf2f0;
   }
 
   /* --- Utilities -------------------------------------------------------- */
@@ -699,18 +714,24 @@
     padding-inline: var(--gutter);
   }
 
+  /* The vertical measure of one printed band. */
+  .band {
+    padding-block: var(--band);
+  }
+
   .skip-link {
     position: absolute;
     left: 0.5rem;
     top: -4rem;
     z-index: 100;
     padding: 0.75rem 1.25rem;
-    background: var(--color-navy-700);
+    background: var(--color-navy-900);
     color: #ffffff;
     font-family: var(--font-label);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.13em;
+    font-size: 0.78rem;
     transition: top 0.2s var(--ease-chart);
   }
 
@@ -721,26 +742,42 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  /* The four-colour register bar that opens the header and closes the footer:
+     the school's coding key, printed as a strip. */
+  .register-bar {
+    display: flex;
+    height: 4px;
+  }
+
+  .register-bar > i {
+    flex: 1;
+  }
+  .register-bar > i:nth-child(1) {
+    background: var(--color-saffron);
+  }
+  .register-bar > i:nth-child(2) {
+    background: var(--color-alert);
+  }
+  .register-bar > i:nth-child(3) {
+    background: var(--color-navy-700);
+  }
+  .register-bar > i:nth-child(4) {
+    background: var(--color-verify);
+  }
 }
 
 /* ============================================================================
-   Reveal motion — the one authored moment: leader lines drawing and callout
-   pins landing, as if the chart were being pointed at.
-
-   This is strictly progressive enhancement. Everything is visible by default;
-   only when the inline boot script has confirmed JS (adding `.js` to <html>)
-   does anything start hidden. With JS off, an IntersectionObserver failure, or
-   a hydration error, all content stays on screen.
+   Reveal motion — content rises a little as the page is read. Nothing fades
+   from zero, and nothing is hidden until the inline boot script has confirmed
+   JavaScript is running (adding `.js` to <html>), so a scripting failure, a
+   slow IntersectionObserver or a hydration error leaves the page fully
+   readable rather than blank.
    ========================================================================== */
 
 @layer components {
-  /*
-   * Content-bearing elements only ever translate — they never fade from zero.
-   * A reader scrolling fast, or a slow observer callback, must never meet an
-   * empty region where a photograph or a key entry should be.
-   */
   .js [data-reveal="pending"] .rise {
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
 
   [data-reveal="in"] .rise {
@@ -774,7 +811,7 @@
 
 @keyframes rise-in {
   from {
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     transform: none;
@@ -885,6 +922,18 @@
   .nav-drawer > div {
     overflow: hidden;
   }
+
+  /* The desktop mega-menu drops out of the header band. */
+  .mega {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: #ffffff;
+    border-bottom: 1px solid var(--color-hairline);
+    box-shadow: 0 24px 40px -28px rgb(16 24 32 / 0.35);
+    animation: mega-in 0.18s var(--ease-chart) both;
+  }
 }
 
 @keyframes nav-entry-in {
@@ -898,13 +947,25 @@
   }
 }
 
+@keyframes mega-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .nav-sheet,
   .nav-drawer {
     transition: none !important;
   }
 
-  .nav-sheet[data-open="true"] .nav-entry {
+  .nav-sheet[data-open="true"] .nav-entry,
+  .mega {
     animation: none !important;
   }
 }

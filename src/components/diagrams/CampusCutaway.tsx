@@ -1,16 +1,16 @@
 /**
- * The campus, drawn as a classroom-chart elevation: flat inks, 2-unit keylines,
- * no gradients, no shading. Numbered pins sit on the drawing; the key that
- * names them is HTML beside it, so the labels stay legible at any width and
- * readable to a screen reader.
+ * The campus, drawn as a measured elevation: flat inks, hairline keylines, no
+ * gradients, no shading. Numbered pins sit on the drawing; the key that names
+ * them is HTML beside it, so the labels stay legible at any width and readable
+ * to a screen reader.
  *
  * The drawing follows the school's own building — a four-storey block with two
  * wings, a recessed central entrance, the flag at the steps.
  */
 
-const INK = "#0a1826";
-const PAPER = "#f4efe3";
-const SHADE = "#e6dfcd";
+const INK = "#101820";
+const PAPER = "#ffffff";
+const SHADE = "#eef1f4";
 const NAVY = "#002147";
 const SAFFRON = "#ffab1f";
 const GREEN = "#1b6e4a";
@@ -71,7 +71,7 @@ export function CampusCutaway({ className = "" }: { className?: string }) {
       aria-label="Elevation drawing of the Venus World Schools building: a four-storey block with two wings and a recessed central entrance, the Indian flag at the steps, palms and a boundary wall in front. Six numbered markers key to the list beside it."
       preserveAspectRatio="xMidYMid meet"
     >
-      <g stroke={INK} strokeWidth={2.5} strokeLinejoin="miter" strokeLinecap="butt">
+      <g stroke={INK} strokeWidth={1.75} strokeLinejoin="miter" strokeLinecap="butt">
         {/* ---- Ground plane ------------------------------------------- */}
         <rect x="0" y="500" width="1000" height="140" fill={NAVY} stroke="none" />
         <path d="M0 500h1000" />
@@ -184,7 +184,7 @@ export function CampusCutaway({ className = "" }: { className?: string }) {
                 className="callout-pin"
                 style={{ "--delay": `${i * 110}ms` } as React.CSSProperties}
               >
-                <circle cx={p.x} cy={p.y} r={17} fill={SAFFRON} stroke={INK} strokeWidth={2.5} />
+                <circle cx={p.x} cy={p.y} r={17} fill={SAFFRON} stroke={INK} strokeWidth={1.75} />
                 <text
                   x={p.x}
                   y={p.y + 6}

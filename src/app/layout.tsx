@@ -1,6 +1,6 @@
 import type { Viewport } from "next";
 import {
-  Bricolage_Grotesque,
+  Source_Serif_4,
   Archivo,
   Archivo_Narrow,
   Tiro_Devanagari_Marathi,
@@ -15,12 +15,13 @@ import "./globals.css";
  *
  * All three Latin faces are variable, so no `weight` array is passed — naming
  * weights would make next/font download one static file per weight instead of
- * a single variable file. Tiro is only ever set in Devanagari, so it ships
- * that subset alone.
+ * a single variable file. Source Serif is optical-size variable too, which is
+ * what lets one file carry both the 68px masthead and a 20px card title. Tiro
+ * is only ever set in Devanagari, so it ships that subset alone.
  */
-const bricolage = Bricolage_Grotesque({
+const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
-  variable: "--font-bricolage",
+  variable: "--font-source-serif",
   display: "swap",
 });
 
@@ -58,7 +59,7 @@ export default function RootLayout({
       // The boot script below adds `js` to this element before React hydrates,
       // which React would otherwise report as a server/client mismatch.
       suppressHydrationWarning
-      className={`${bricolage.variable} ${archivo.variable} ${archivoNarrow.variable} ${tiro.variable}`}
+      className={`${sourceSerif.variable} ${archivo.variable} ${archivoNarrow.variable} ${tiro.variable}`}
     >
       <head>
         {/*

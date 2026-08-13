@@ -83,33 +83,31 @@ export function EnquiryForm({ compact = false }: { compact?: boolean }) {
 
   if (status === "sent") {
     return (
-      <div className="p-6 text-center sm:p-10">
-        <span className="callout-num callout-num-filled mx-auto !h-12 !w-12 !text-lg">
-          <Icon name="check" size={22} />
-        </span>
-        <h3 className="display mt-5 text-2xl">Enquiry received</h3>
-        <p className="prose-chart mx-auto mt-3">
-          The school office will contact you on the number you gave. Office hours
-          are {school.hours[0].days}, {school.hours[0].time}.
+      <div className="border-l-[3px] border-verify bg-verify-wash px-5 py-6">
+        <p className="chart-label text-verify">Enquiry received</p>
+        <h3 className="display mt-3 text-[1.5rem] leading-[1.25] text-ink">
+          Thank you — the office will telephone you back.
+        </h3>
+        <p className="mt-3 text-[0.97rem] leading-[1.7] text-ink-soft">
+          The school office will contact you on the number you gave. Office hours are{" "}
+          {school.hours[0].days}, {school.hours[0].time}.
         </p>
-        <p className="mt-5">
-          <a
-            href={school.registrationUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-ink"
-          >
-            Continue to registration
-            <Icon name="arrow" size={15} />
-          </a>
-        </p>
+        <a
+          href={school.registrationUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-ink mt-6"
+        >
+          Continue to registration
+          <Icon name="arrow" size={14} />
+        </a>
       </div>
     );
   }
 
   const err = (k: string) =>
     errors[k] ? (
-      <p id={f(`${k}-err`)} className="mt-1.5 text-sm font-semibold text-alert">
+      <p id={f(`${k}-err`)} className="mt-2 text-sm font-medium text-alert">
         {errors[k]}
       </p>
     ) : null;
@@ -120,19 +118,29 @@ export function EnquiryForm({ compact = false }: { compact?: boolean }) {
   });
 
   return (
-    <form onSubmit={onSubmit} noValidate className="p-5 sm:p-7">
+    <form onSubmit={onSubmit} noValidate>
       {formError ? (
         <div
           role="alert"
-          className="mb-5 border-2 border-alert bg-[#fdf2f0] px-4 py-3 text-sm font-semibold text-alert"
+          className="mb-6 border-l-[3px] border-alert bg-[#fdf2f0] px-4 py-3.5 text-sm font-medium text-alert"
         >
           {formError}
         </div>
       ) : null}
 
-      <div className={`grid gap-4 ${compact ? "" : "sm:grid-cols-2"}`}>
-        <div className={compact ? "" : "sm:col-span-2"}>
-          <label htmlFor={f("parentName")} className="chart-label mb-1.5 block">
+      {/*
+        The columns are measured against the form, not the viewport: the slip
+        is set in a half-width column on Contact and full width on Admissions,
+        and a viewport-driven `sm:grid-cols-2` would put two 14ch fields side
+        by side in the narrow case.
+      */}
+      <div
+        className={`grid gap-5 ${
+          compact ? "" : "[grid-template-columns:repeat(auto-fit,minmax(min(100%,13.75rem),1fr))]"
+        }`}
+      >
+        <div className={compact ? "" : "[grid-column:1/-1]"}>
+          <label htmlFor={f("parentName")} className="chart-label mb-2 block on-ground-faint">
             Parent or guardian <span className="text-alert">*</span>
           </label>
           <input
@@ -147,7 +155,7 @@ export function EnquiryForm({ compact = false }: { compact?: boolean }) {
         </div>
 
         <div>
-          <label htmlFor={f("phone")} className="chart-label mb-1.5 block">
+          <label htmlFor={f("phone")} className="chart-label mb-2 block on-ground-faint">
             Phone <span className="text-alert">*</span>
           </label>
           <input
@@ -166,7 +174,7 @@ export function EnquiryForm({ compact = false }: { compact?: boolean }) {
         </div>
 
         <div>
-          <label htmlFor={f("email")} className="chart-label mb-1.5 block">
+          <label htmlFor={f("email")} className="chart-label mb-2 block on-ground-faint">
             Email
           </label>
           <input
@@ -182,7 +190,7 @@ export function EnquiryForm({ compact = false }: { compact?: boolean }) {
         </div>
 
         <div>
-          <label htmlFor={f("childName")} className="chart-label mb-1.5 block">
+          <label htmlFor={f("childName")} className="chart-label mb-2 block on-ground-faint">
             Child&rsquo;s name
           </label>
           <input id={f("childName")} name="childName" className="field" {...aria("childName")} />
@@ -190,7 +198,7 @@ export function EnquiryForm({ compact = false }: { compact?: boolean }) {
         </div>
 
         <div>
-          <label htmlFor={f("seekingClass")} className="chart-label mb-1.5 block">
+          <label htmlFor={f("seekingClass")} className="chart-label mb-2 block on-ground-faint">
             Class applied for <span className="text-alert">*</span>
           </label>
           <select
@@ -213,8 +221,8 @@ export function EnquiryForm({ compact = false }: { compact?: boolean }) {
           {err("seekingClass")}
         </div>
 
-        <div className={compact ? "" : "sm:col-span-2"}>
-          <label htmlFor={f("message")} className="chart-label mb-1.5 block">
+        <div className={compact ? "" : "[grid-column:1/-1]"}>
+          <label htmlFor={f("message")} className="chart-label mb-2 block on-ground-faint">
             Your question
           </label>
           <textarea
@@ -235,14 +243,14 @@ export function EnquiryForm({ compact = false }: { compact?: boolean }) {
         <input id={f("website")} name="website" tabIndex={-1} autoComplete="off" />
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-4">
+      <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-4">
         <button type="submit" className="btn btn-primary" disabled={status === "sending"}>
           {status === "sending" ? "Sending…" : "Send enquiry"}
-          {status === "sending" ? null : <Icon name="arrow" size={15} />}
+          {status === "sending" ? null : <Icon name="arrow" size={14} />}
         </button>
-        <p className="text-sm text-ink-soft">
-          Or call{" "}
-          <a href={school.phones[1].href} className="font-semibold underline">
+        <p className="max-w-[34ch] text-sm leading-[1.6] text-ink-faint">
+          We use your number only to answer this enquiry. Or call{" "}
+          <a href={school.phones[1].href} className="tabular font-semibold text-navy-700">
             {school.phones[1].number}
           </a>
         </p>

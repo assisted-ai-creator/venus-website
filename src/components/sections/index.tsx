@@ -66,14 +66,15 @@ const RENDERERS: Record<string, (props: SectionProps) => ReactNode> = {
 /**
  * A band's ground.
  *
- * `navy` and `navy-saffron` are the names the panel has been writing into
- * stored pages since before the site went white, so they stay as aliases of
- * the amber washes that replaced them rather than being renamed under content
- * already in the database. New sections choose `amber` or `amber-deep`.
+ * `navy`, `navy-saffron` and `wall-dense` are names the panel has been writing
+ * into stored pages through two earlier looks of this site, so they stay as
+ * aliases of the grounds that replaced them rather than being renamed under
+ * content already in the database. New sections choose `wall`, `amber` or
+ * `amber-deep`.
  */
 const GROUND_CLASS: Record<SectionGround, string> = {
   wall: "wall",
-  "wall-dense": "wall wall-dense",
+  "wall-dense": "wall",
   amber: "ground-amber",
   "amber-deep": "ground-amber-deep",
   navy: "ground-amber",
@@ -135,16 +136,34 @@ function chunkByColumn(sections: SiteSection[]): Chunk[] {
   return chunks;
 }
 
+/**
+ * Consecutive sections that print on the same ground become one band.
+ *
+ * They are grouped by the class the ground resolves to, not by its name:
+ * several names now map to the same white, and grouping by name would open
+ * two full bands of padding between two blocks a reader sees as one run.
+ */
 function bands(sections: SiteSection[]): { ground: SectionGround; sections: SiteSection[] }[] {
   const out: { ground: SectionGround; sections: SiteSection[] }[] = [];
   for (const s of sections) {
     const ground = groundOf(s);
     const last = out[out.length - 1];
-    if (last && last.ground === ground) last.sections.push(s);
+    const same =
+      last && (GROUND_CLASS[last.ground] ?? GROUND_CLASS.wall) === (GROUND_CLASS[ground] ?? GROUND_CLASS.wall);
+    if (last && same) last.sections.push(s);
     else out.push({ ground, sections: [s] });
   }
   return out;
 }
+
+/**
+ * Blocks that print edge to edge.
+ *
+ * The opening spread has to reach both margins of the window for its split to
+ * read as one sheet, so a band made only of these drops the shell and the
+ * band's own padding and lets the block carry its own measure.
+ */
+const BLEED_TYPES = new Set(["hero"]);
 
 export function SectionList({ sections, site }: { sections: SiteSection[]; site: SiteContent }) {
   const visible = sections.filter((s) => s.enabled !== false);
@@ -152,9 +171,20 @@ export function SectionList({ sections, site }: { sections: SiteSection[]; site:
 
   return (
     <>
-      {bands(visible).map((band, bandIndex) => (
+      {bands(visible).map((band, bandIndex) => {
+        if (band.sections.every((s) => BLEED_TYPES.has(s.type))) {
+          return (
+            <section key={bandIndex} className={GROUND_CLASS[band.ground] ?? GROUND_CLASS.wall}>
+              {band.sections.map((s) => (
+                <Block key={s.id} section={s} site={site} />
+              ))}
+            </section>
+          );
+        }
+
+        return (
         <section key={bandIndex} className={GROUND_CLASS[band.ground] ?? GROUND_CLASS.wall}>
-          <div className="shell space-y-12 py-14 sm:space-y-16 sm:py-20">
+          <div className="shell band space-y-[clamp(2.75rem,5vw,4.5rem)]">
             {chunkByColumn(band.sections).map((chunk, i) => {
               if (chunk.kind === "full") {
                 return chunk.items.map((s) => <Block key={s.id} section={s} site={site} />);
@@ -167,13 +197,13 @@ export function SectionList({ sections, site }: { sections: SiteSection[]; site:
               const stickyRight = right.length === 1 && left.length > 1;
 
               return (
-                <div key={i} className="grid gap-10 lg:grid-cols-2 lg:gap-14">
-                  <div className="space-y-8 lg:self-start">
+                <div key={i} className="grid gap-10 lg:grid-cols-2 lg:gap-[clamp(2.5rem,5vw,5rem)]">
+                  <div className="space-y-10 lg:self-start">
                     {left.map((s) => (
                       <Block key={s.id} section={s} site={site} />
                     ))}
                   </div>
-                  <div className={`space-y-8 lg:self-start ${stickyRight ? "lg:sticky lg:top-28" : ""}`}>
+                  <div className={`space-y-10 lg:self-start ${stickyRight ? "lg:sticky lg:top-36" : ""}`}>
                     {right.map((s) => (
                       <Block key={s.id} section={s} site={site} />
                     ))}
@@ -183,7 +213,8 @@ export function SectionList({ sections, site }: { sections: SiteSection[]; site:
             })}
           </div>
         </section>
-      ))}
+        );
+      })}
     </>
   );
 }

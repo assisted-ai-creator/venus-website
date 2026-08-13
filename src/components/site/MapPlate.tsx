@@ -39,9 +39,9 @@ export function MapPlate({
 
   return (
     <div className={`plate overflow-hidden ${className}`}>
-      {/* The map well is dark whatever the page around it is, so it declares
-          the blue contract: the Load button reverts to saffron here. */}
-      <div className="on-ink relative aspect-[4/3] w-full bg-navy-850 sm:aspect-[16/10]">
+      {/* The map well is navy whatever the page around it is, so it declares
+          the navy contract: the Load button reverts to saffron here. */}
+      <div className="on-ink relative aspect-[4/3] w-full bg-navy-900 sm:aspect-[16/10]">
         {live ? (
           <iframe
             src={embed}
@@ -52,16 +52,15 @@ export function MapPlate({
             allowFullScreen
           />
         ) : (
-          <div
-            className="ground-ink wall-dense absolute inset-0 grid place-items-center p-6 text-center"
-            aria-hidden="true"
-          >
+          <div className="absolute inset-0 grid place-items-center p-6 text-center" aria-hidden="true">
             {/* A drawn locator standing in for the map until it is asked for. */}
             <div>
-              <span className="mx-auto grid h-14 w-14 place-items-center rounded-full border-2 border-saffron text-saffron">
-                <Icon name="pin" size={26} />
+              <span className="mx-auto grid h-14 w-14 place-items-center border border-saffron text-saffron">
+                <Icon name="pin" size={24} />
               </span>
-              {postcodeLine ? <p className="chart-label mt-4 text-paper">{postcodeLine}</p> : null}
+              {postcodeLine ? (
+                <p className="chart-label mt-4 text-navy-100">{postcodeLine}</p>
+              ) : null}
             </div>
           </div>
         )}
@@ -70,27 +69,27 @@ export function MapPlate({
           <button
             type="button"
             onClick={() => setLive(true)}
-            className="absolute inset-0 grid place-items-end justify-center p-5"
+            className="absolute inset-0 grid place-items-end justify-center p-6"
           >
             <span className="btn btn-primary">
               Load the map
-              <Icon name="pin" size={15} />
+              <Icon name="pin" size={14} />
             </span>
             <span className="sr-only">Load the interactive Google map of the campus</span>
           </button>
         ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t-2 border-ink bg-paper-shade px-4 py-3">
-        <p className="chart-label">{addressLine}</p>
+      <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-2 border-t border-hairline px-5 py-4">
+        <p className="chart-label text-ink-faint">{addressLine}</p>
         <a
           href={directions}
           target="_blank"
           rel="noopener noreferrer"
-          className="chart-label inline-flex items-center gap-1.5 underline underline-offset-2"
+          className="chart-label inline-flex items-center gap-2 text-navy-700 transition-colors hover:text-navy-900"
         >
           Directions
-          <Icon name="arrow" size={13} />
+          <Icon name="arrow" size={12} />
         </a>
       </div>
     </div>

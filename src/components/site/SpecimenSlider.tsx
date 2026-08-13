@@ -6,9 +6,9 @@ import { Icon } from "@/components/chart/Icon";
 import { thumb } from "@/lib/img";
 
 /**
- * The banner slider, built as the specimen plate mounted inside the chart: a
- * keylined photographic window with a numbered caption strip, the way a printed
- * chart tips in a photograph beside its diagram.
+ * The photographic half of the opening spread: one image at a time, filling
+ * its column to the window's edge, with the caption printed on a navy ribbon
+ * across the foot the way a press photograph carries its cutline.
  *
  * Advances on a timer, pauses on hover, focus and when the tab is hidden, stops
  * entirely under prefers-reduced-motion, and is fully keyboard operable.
@@ -80,14 +80,14 @@ export function SpecimenSlider({
       role="region"
       aria-label="School photographs"
       aria-roledescription="carousel"
-      className="plate overflow-hidden"
+      className="relative min-h-[26rem] w-full overflow-hidden bg-[#dfe4ea]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
       onKeyDown={onKey}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-navy-100 sm:aspect-[3/2]">
+      <div className="absolute inset-0">
         {slides.map((s, n) =>
           mounted.has(n) ? (
             /* eslint-disable-next-line @next/next/no-img-element */
@@ -97,7 +97,7 @@ export function SpecimenSlider({
               // A phone draws this ~350px wide; without a srcset it would pull
               // the full 1600px master over mobile data for no visible gain.
               srcSet={`${thumb(s.src)} 800w, ${s.src} 1600w`}
-              sizes="(min-width: 1024px) 580px, 100vw"
+              sizes="(min-width: 1024px) 50vw, 100vw"
               alt={n === i ? s.alt : ""}
               aria-hidden={n === i ? undefined : true}
               width={1600}
@@ -111,22 +111,30 @@ export function SpecimenSlider({
           ) : null
         )}
 
-        <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 border-t-2 border-ink bg-paper px-3 py-2">
-          <p
-            className="chart-label truncate"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            <span className="mr-2 opacity-70">
+      </div>
+
+      {/* The cutline. Navy at 88% so the photograph still reads through it at
+          the edges, and wide enough only for the words it carries. */}
+      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4">
+        <p
+          className="chart-label max-w-[34ch] bg-navy-900/88 px-5 py-3 text-white"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {slides.length > 1 ? (
+            <span className="tabular mr-2.5 text-navy-200">
               {String(i + 1).padStart(2, "0")}/{String(slides.length).padStart(2, "0")}
             </span>
-            {current.caption}
-          </p>
-          <div className="flex flex-none items-center gap-1.5">
+          ) : null}
+          {current.caption || current.alt}
+        </p>
+
+        {slides.length > 1 ? (
+          <div className="flex flex-none">
             <button
               type="button"
               onClick={() => go(i - 1)}
-              className="grid h-8 w-8 place-items-center border-2 border-ink text-ink transition-colors hover:bg-saffron"
+              className="grid h-11 w-11 place-items-center bg-navy-900/88 text-white transition-colors hover:bg-saffron hover:text-ink"
             >
               <Icon name="chevron" size={13} className="rotate-180" />
               <span className="sr-only">Previous photograph</span>
@@ -134,30 +142,13 @@ export function SpecimenSlider({
             <button
               type="button"
               onClick={() => go(i + 1)}
-              className="grid h-8 w-8 place-items-center border-2 border-ink text-ink transition-colors hover:bg-saffron"
+              className="grid h-11 w-11 place-items-center border-l border-navy-750 bg-navy-900/88 text-white transition-colors hover:bg-saffron hover:text-ink"
             >
               <Icon name="chevron" size={13} />
               <span className="sr-only">Next photograph</span>
             </button>
           </div>
-        </div>
-      </div>
-
-      <div className="flex gap-1.5 border-t-2 border-ink bg-paper-shade px-3 py-2">
-        {slides.map((s, n) => (
-          <button
-            key={s.src}
-            type="button"
-            onClick={() => go(n)}
-            aria-current={n === i ? "true" : undefined}
-            className="group h-2.5 flex-1 border-2 border-ink transition-colors"
-            style={{ background: n === i ? "#ffab1f" : "transparent" }}
-          >
-            <span className="sr-only">
-              Photograph {n + 1}: {s.caption}
-            </span>
-          </button>
-        ))}
+        ) : null}
       </div>
     </div>
   );

@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 
 /**
- * A plate: one sheet of chart stock, keylined and pinned to the wall. Every
- * region of dense reading on this site sits on one.
+ * A plate: one ruled-off region of the sheet, used where the border earns its
+ * place — a form, a summary card, a table that has to be told apart from the
+ * page around it. Hairline and square, never a card floating above the page.
  */
 export function Plate({
   children,
@@ -23,8 +24,9 @@ export function Plate({
 }
 
 /**
- * The printed header strip across the top of a chart. `plate` is the plate
- * number that runs at the right-hand end, the way a chart series is numbered.
+ * The label strip that opens a plate. `plate` is the reference that runs at
+ * the right-hand end — the form number, the return it is taken from — the way
+ * a filed document is numbered.
  */
 export function TitleBand({
   children,
@@ -35,28 +37,27 @@ export function TitleBand({
   plate?: string;
   tone?: "saffron" | "navy";
 }) {
+  if (!children && !plate) return null;
   return (
     <div
       className={`${
         tone === "navy" ? "title-band-navy" : "title-band"
-      } flex items-center justify-between gap-4 px-5 py-2.5 sm:px-7`}
+      } flex items-baseline justify-between gap-4 px-5 py-3.5 sm:px-7`}
     >
       <span className="chart-label">{children}</span>
-      {plate ? (
-        <span className="chart-label tabular opacity-80">{plate}</span>
-      ) : null}
+      {plate ? <span className="chart-label tabular opacity-70">{plate}</span> : null}
     </div>
   );
 }
 
-/** The double rule that separates chart sections. */
+/** The hairline that separates one part of a sheet from the next. */
 export function Rule({ className = "" }: { className?: string }) {
   return <hr className={`rule-double ${className}`} />;
 }
 
 /**
- * The publisher / registration block printed at the foot of a chart — the
- * small print that makes the sheet a document rather than a poster.
+ * The registration block printed at the foot of a document — the small print
+ * that makes the sheet a record rather than a poster.
  */
 export function PublisherBlock({
   items,
@@ -65,14 +66,13 @@ export function PublisherBlock({
   items: { label: string; value: string }[];
   className?: string;
 }) {
+  if (!items.length) return null;
   return (
-    <dl
-      className={`flex flex-wrap items-baseline gap-x-6 gap-y-2 sm:gap-x-10 ${className}`}
-    >
+    <dl className={`flex flex-wrap items-baseline gap-x-10 gap-y-2.5 ${className}`}>
       {items.map((it) => (
-        <div key={it.label} className="flex items-baseline gap-2">
-          <dt className="chart-label opacity-70">{it.label}</dt>
-          <dd className="chart-label tabular">{it.value}</dd>
+        <div key={it.label} className="flex items-baseline gap-2.5">
+          <dt className="chart-label on-ground-faint">{it.label}</dt>
+          <dd className="chart-label tabular on-ground">{it.value}</dd>
         </div>
       ))}
     </dl>

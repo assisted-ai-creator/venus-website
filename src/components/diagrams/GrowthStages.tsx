@@ -1,14 +1,14 @@
 /**
- * The three stages drawn the way an Indian classroom chart draws growth — seed,
- * sapling, tree — with the school's own stage names and ranges keyed beneath.
- * Flat inks, keylines, no shading.
+ * The three stages drawn as growth — seed, sapling, tree — with the school's
+ * own stage names and ranges keyed beneath. Flat inks, hairline keylines, no
+ * shading.
  */
 
-const INK = "#0a1826";
-const PAPER = "#f4efe3";
+const INK = "#101820";
+const PAPER = "#ffffff";
 const SAFFRON = "#ffab1f";
 const GREEN = "#1b6e4a";
-const SOIL = "#e6dfcd";
+const SOIL = "#eef1f4";
 
 const stages = [
   { label: "Pre-Primary", range: "Ages 3–6", sub: "Playgroup to Senior KG" },
@@ -26,7 +26,7 @@ export function GrowthStages({ className = "" }: { className?: string }) {
         aria-label="Diagram of three growth stages: a seedling for Pre-Primary, a sapling for Primary, and a full tree for Secondary, standing in a shared band of soil."
         preserveAspectRatio="xMidYMid meet"
       >
-        <g stroke={INK} strokeWidth={2.5} strokeLinejoin="miter" strokeLinecap="butt">
+        <g stroke={INK} strokeWidth={1.75} strokeLinejoin="miter" strokeLinecap="butt">
           {/* Soil band */}
           <rect x="0" y="238" width="900" height="34" fill={SOIL} />
           <path d="M0 238h900M0 272h900" />
@@ -73,7 +73,7 @@ export function GrowthStages({ className = "" }: { className?: string }) {
           {/* Stage markers on the soil line */}
           {[150, 450, 750].map((x, i) => (
             <g key={x}>
-              <circle cx={x} cy={238} r={15} fill={SAFFRON} stroke={INK} strokeWidth={2.5} />
+              <circle cx={x} cy={238} r={15} fill={SAFFRON} stroke={INK} strokeWidth={1.75} />
               <text
                 x={x}
                 y={244}
@@ -100,20 +100,18 @@ export function GrowthStages({ className = "" }: { className?: string }) {
         </g>
       </svg>
 
-      <ol className="mt-6 grid gap-5 sm:grid-cols-3">
+      <ol className="mt-8 grid gap-x-10 sm:grid-cols-3">
         {stages.map((s, i) => (
           <li
             key={s.label}
-            className="rise flex gap-3.5"
+            className="rise flex gap-4 border-t border-paper-shade pt-4"
             style={{ "--delay": `${200 + i * 110}ms` } as React.CSSProperties}
           >
-            <span className="callout-num callout-num-filled mt-0.5 flex-none">
-              {i + 1}
-            </span>
+            <span className="callout-num pt-1">{String(i + 1).padStart(2, "0")}</span>
             <span>
-              <span className="display block text-lg on-ground">{s.label}</span>
+              <span className="display-sm block text-[1.1rem] on-ground">{s.label}</span>
               <span className="chart-label block on-ground-accent">{s.range}</span>
-              <span className="mt-0.5 block text-sm on-ground-soft">{s.sub}</span>
+              <span className="mt-1 block text-[0.92rem] on-ground-soft">{s.sub}</span>
             </span>
           </li>
         ))}

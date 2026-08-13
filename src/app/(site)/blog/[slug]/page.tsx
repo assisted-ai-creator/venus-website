@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPost, getSite } from "@/lib/content";
 import { PageHeader } from "@/components/site/PageHeader";
-import { Plate } from "@/components/chart/Plate";
 import { Icon } from "@/components/chart/Icon";
 import { RichBody, Img } from "@/components/sections/parts";
 import { articleSchema } from "@/lib/seo";
@@ -62,11 +61,11 @@ export default async function BlogPostPage({ params }: Params) {
         meta={meta}
       />
 
-      <section className="wall wall-dense">
-        <div className="shell py-14 sm:py-20">
-          <article className="mx-auto max-w-4xl">
+      <section className="wall">
+        <div className="shell band">
+          <article className="mx-auto max-w-3xl">
             {post.cover ? (
-              <figure className="plate mb-10 overflow-hidden">
+              <figure className="mb-12 overflow-hidden bg-image-bed">
                 <Img
                   src={post.cover}
                   alt={post.coverAlt || post.title}
@@ -78,28 +77,23 @@ export default async function BlogPostPage({ params }: Params) {
               </figure>
             ) : null}
 
-            <Plate>
-              <div className="p-6 sm:p-10">
-                <RichBody html={post.bodyHtml} />
-              </div>
-            </Plate>
+            <RichBody html={post.bodyHtml} className="max-w-none" />
           </article>
 
           {others.length ? (
-            <nav aria-label="More posts" className="mt-14 border-t-2 keyline-ground pt-8">
-              <h2 className="chart-label mb-5 on-ground-accent">More from the school</h2>
-              <ul className="grid gap-4 sm:grid-cols-3">
+            <nav aria-label="More posts" className="mt-[clamp(3rem,6vw,5rem)] border-t-2 border-ink pt-8">
+              <h2 className="chart-label mb-6 on-ground-accent">More from the school</h2>
+              <ul className="grid gap-x-10 sm:grid-cols-3">
                 {others.map((p) => (
-                  <li key={p.slug}>
+                  <li key={p.slug} className="border-t border-paper-shade">
                     <Link
                       href={`/blog/${p.slug}`}
-                      className="plate flex h-full flex-col justify-between gap-3 p-4 transition-transform hover:-translate-y-0.5"
+                      className="group block py-4 on-ground transition-colors hover-accent"
                     >
-                      <span className="display text-base">{p.title}</span>
-                      <span className="chart-label tabular flex items-center justify-between gap-2 opacity-70">
+                      <span className="chart-label tabular block on-ground-faint">
                         {readable(p.publishedAt)}
-                        <Icon name="arrow" size={14} />
                       </span>
+                      <span className="display-sm mt-1.5 block text-[1.08rem]">{p.title}</span>
                     </Link>
                   </li>
                 ))}
@@ -109,7 +103,7 @@ export default async function BlogPostPage({ params }: Params) {
 
           <p className="mt-10">
             <Link href="/blog" className="btn btn-ghost">
-              <Icon name="chevron" size={13} className="rotate-180" />
+              <Icon name="chevron" size={12} className="rotate-180" />
               All posts
             </Link>
           </p>

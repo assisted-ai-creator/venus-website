@@ -9,6 +9,15 @@ import type { AdmissionStatus } from "@/lib/admissions";
 import type { NavItem, SchoolSettings } from "@/lib/site";
 
 /**
+ * The masthead, in three strips: the four-colour register bar, the navy record
+ * strip, and the white navigation row the page hangs from.
+ *
+ * The record strip carries one line. When the school has a live admissions
+ * notice that line is the notice, because it is the thing a parent came for;
+ * otherwise it falls back to the filing numbers, which is what makes the strip
+ * a record rather than a banner. The numbers are printed in full in the footer
+ * either way, so nothing is lost when the notice takes the space.
+ *
  * `admissions` is worked out on the server and handed down rather than
  * computed here: the strip is the same for every reader of one request, and a
  * clock read during hydration would only invite it to disagree with itself.
@@ -27,7 +36,7 @@ export function SiteHeader({
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   /** Which mobile groups are expanded. The one holding the current page opens. */
   const [expanded, setExpanded] = useState<string[]>([]);
-  const navRef = useRef<HTMLElement | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setOpen(false);
@@ -59,14 +68,33 @@ export function SiteHeader({
         setOpenMenu(null);
       }
     };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpenMenu(null);
+    };
     document.addEventListener("pointerdown", onDown);
-    return () => document.removeEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [openMenu]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   const session = school.admissionWindow.session;
+
+  /** The one line the record strip prints, in order of what a parent needs. */
+  const recordLine =
+    session || admissions.detail
+      ? [admissions.label, admissions.detail].filter(Boolean).join(" · ")
+      : [
+          school.affiliationNo ? `CBSE Affiliation No. ${school.affiliationNo}` : "",
+          school.schoolCode ? `School Code ${school.schoolCode}` : "",
+          school.address.locality,
+        ]
+          .filter(Boolean)
+          .join(" · ");
 
   /** Opening the sheet reveals where the reader already is. */
   const openSheet = () => {
@@ -79,100 +107,104 @@ export function SiteHeader({
   const toggleGroup = (label: string) =>
     setExpanded((v) => (v.includes(label) ? v.filter((l) => l !== label) : [...v, label]));
 
+  const primaryPhone = school.phones[0];
+
   return (
-    <header className="on-ink sticky top-0 z-50">
-      {/* The school's live notice, printed as a running strip. A window that
-          has run out loses the saffron with it — closed is not a callout. */}
-      {session || admissions.detail ? (
-        <div
-          className={
-            admissions.state === "closed"
-              ? "bg-navy-800 text-navy-100"
-              : "bg-saffron text-ink"
-          }
-        >
-          <div className="shell flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-1.5">
-            <p className="chart-label">{admissions.label}</p>
-            {admissions.detail ? (
-              <p className="chart-label tabular opacity-75">{admissions.detail}</p>
+    <header className="sticky top-0 z-50 bg-white">
+      {/* The register bar: the school's four coding inks, printed as a strip. */}
+      <div className="register-bar" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+        <i />
+      </div>
+
+      <div className="on-ink bg-navy-900 text-navy-100">
+        <div className="shell flex h-[38px] items-center justify-between gap-6">
+          <p className="chart-label truncate">{recordLine}</p>
+
+          <div className="hidden flex-none items-center gap-6 sm:flex">
+            <Link href="/notices" className="chart-label transition-colors hover:text-saffron">
+              Notices
+            </Link>
+            <Link href="/blog" className="chart-label transition-colors hover:text-saffron">
+              Blog
+            </Link>
+            {primaryPhone ? (
+              <a
+                href={primaryPhone.href}
+                className="chart-label tabular hidden text-white transition-colors hover:text-saffron md:block"
+              >
+                {primaryPhone.number}
+              </a>
             ) : null}
           </div>
         </div>
-      ) : null}
+      </div>
 
-      <div className="border-b-2 border-navy-700 bg-navy-900/95 backdrop-blur-sm">
-        <div className="shell flex items-center justify-between gap-6 py-3">
-          <Link
-            href="/"
-            className="text-paper transition-opacity hover:opacity-80"
-            aria-label={`${school.name} — home`}
-          >
+      <div ref={navRef} className="relative border-b border-hairline bg-white/97 backdrop-blur-sm">
+        <div className="shell flex h-[78px] items-center justify-between gap-8">
+          <Link href="/" className="flex-none" aria-label={`${school.name} — home`}>
             <Wordmark />
           </Link>
 
-          <nav ref={navRef} aria-label="Main" className="hidden items-center gap-1 lg:flex">
-            {nav.map((item) =>
-              item.children?.length ? (
+          <nav aria-label="Main" className="hidden items-center lg:flex">
+            {nav.map((item) => {
+              const active = isActive(item.href);
+
+              return item.children?.length ? (
                 <div key={item.label} className="relative">
                   <button
                     type="button"
                     aria-expanded={openMenu === item.label}
                     aria-haspopup="true"
                     onClick={() => setOpenMenu(openMenu === item.label ? null : item.label)}
-                    className={`chart-label flex items-center gap-1.5 px-3 py-2.5 transition-colors ${
-                      isActive(item.href) ? "text-saffron" : "text-paper hover:text-saffron"
+                    onMouseEnter={() => setOpenMenu(item.label)}
+                    className={`flex items-center gap-1.5 px-3.5 py-7 text-[0.92rem] font-semibold transition-colors ${
+                      active || openMenu === item.label ? "text-navy-700" : "text-ink hover:text-navy-700"
                     }`}
                   >
                     {item.label}
                     <Icon
                       name="chevron"
-                      size={12}
-                      className={`transition-transform ${openMenu === item.label ? "rotate-90" : ""}`}
+                      size={10}
+                      className={`rotate-90 opacity-55 transition-transform ${
+                        openMenu === item.label ? "-rotate-90" : ""
+                      }`}
                     />
                   </button>
-                  {openMenu === item.label ? (
-                    <div className="plate absolute left-0 top-full mt-2 w-72 p-1.5">
-                      <ul>
-                        {item.children.map((c) => (
-                          <li key={c.href}>
-                            <Link
-                              href={c.href}
-                              className="block px-3 py-2 transition-colors hover:bg-saffron-100"
-                            >
-                              <span className="block text-[0.92rem] font-semibold">{c.label}</span>
-                              {c.note ? (
-                                <span className="chart-label mt-0.5 block text-[0.68rem] text-ink-soft">
-                                  {c.note}
-                                </span>
-                              ) : null}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                  {active ? (
+                    <span aria-hidden="true" className="absolute inset-x-3.5 bottom-0 h-[3px] bg-navy-700" />
                   ) : null}
                 </div>
               ) : (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive(item.href) ? "page" : undefined}
-                  className={`chart-label px-3 py-2.5 transition-colors ${
-                    isActive(item.href) ? "text-saffron" : "text-paper hover:text-saffron"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              )
-            )}
+                <div key={item.href} className="relative">
+                  <Link
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    onMouseEnter={() => setOpenMenu(null)}
+                    className={`block px-3.5 py-7 text-[0.92rem] font-semibold transition-colors ${
+                      active ? "text-navy-700" : "text-ink hover:text-navy-700"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                  {active ? (
+                    <span aria-hidden="true" className="absolute inset-x-3.5 bottom-0 h-[3px] bg-navy-700" />
+                  ) : null}
+                </div>
+              );
+            })}
+
             {school.registrationUrl && admissions.showRegister ? (
               <a
                 href={school.registrationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-primary ml-2"
+                className="btn btn-ink ml-4 !py-3.5"
               >
-                Register
+                {session ? `Register ${session}` : "Register"}
+                <Icon name="arrow" size={14} />
               </a>
             ) : null}
           </nav>
@@ -182,12 +214,57 @@ export function SiteHeader({
             onClick={openSheet}
             aria-expanded={open}
             aria-controls="mobile-nav"
-            className="btn btn-ghost !px-3 !py-2 lg:hidden"
+            className="-mr-1 flex flex-col gap-[5px] p-3 lg:hidden"
           >
-            <Icon name="menu" size={18} />
+            <span aria-hidden="true" className="block h-[2px] w-[26px] bg-ink" />
+            <span aria-hidden="true" className="block h-[2px] w-[26px] bg-ink" />
+            <span aria-hidden="true" className="block h-[2px] w-[26px] bg-ink" />
             <span className="sr-only">Open menu</span>
           </button>
         </div>
+
+        {/*
+          The drop panel. One layout for every section: what the section is on
+          the left, everything filed under it on the right, so a reader can
+          reach a sub-page without first landing on its index.
+        */}
+        {nav.map((item) =>
+          item.children?.length && openMenu === item.label ? (
+            <div
+              key={item.label}
+              className="mega hidden lg:block"
+              onMouseLeave={() => setOpenMenu(null)}
+            >
+              <div className="shell grid grid-cols-[minmax(0,0.75fr)_minmax(0,2fr)] gap-16 py-10">
+                <div>
+                  <p className="eyebrow">{item.label}</p>
+                  <Link href={item.href} className="btn-link mt-5">
+                    Go to {item.label}
+                    <Icon name="arrow" size={13} />
+                  </Link>
+                </div>
+
+                <ul className="grid grid-cols-2 gap-x-12">
+                  {item.children.map((c) => (
+                    <li key={c.href}>
+                      <Link
+                        href={c.href}
+                        className="block border-b border-[#edf0f3] py-3.5 text-[0.95rem] font-semibold text-ink transition-colors hover:text-navy-700"
+                      >
+                        {c.label}
+                        {c.note ? (
+                          <span className="chart-label mt-0.5 block text-[0.64rem] text-ink-faint">
+                            {c.note}
+                          </span>
+                        ) : null}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ) : null
+        )}
       </div>
 
       {/*
@@ -200,17 +277,17 @@ export function SiteHeader({
         data-open={open ? "true" : "false"}
         inert={!open}
         aria-hidden={!open}
-        className="nav-sheet lg:hidden"
+        className="nav-sheet on-ink lg:hidden"
       >
-        <div className="flex-none border-b-2 border-navy-700">
-          <div className="shell flex items-center justify-between gap-6 py-3">
-            <Link href="/" className="text-paper" aria-label={`${school.name} — home`}>
-              <Wordmark />
+        <div className="flex-none border-b border-navy-750">
+          <div className="shell flex items-center justify-between gap-6 py-3.5">
+            <Link href="/" aria-label={`${school.name} — home`}>
+              <Wordmark compact onDark />
             </Link>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="btn btn-ghost !px-3 !py-2"
+              className="grid h-11 w-11 place-items-center border border-navy-750 text-white transition-colors hover:border-saffron hover:text-saffron"
             >
               <Icon name="close" size={18} />
               <span className="sr-only">Close menu</span>
@@ -218,7 +295,7 @@ export function SiteHeader({
           </div>
         </div>
 
-        <nav aria-label="Main, mobile" className="shell flex-1 py-6">
+        <nav aria-label="Main, mobile" className="shell flex-1 py-7">
           <ul>
             {nav.map((item, i) => {
               const isOpen = expanded.includes(item.label);
@@ -245,32 +322,32 @@ export function SiteHeader({
                         onClick={() => toggleGroup(item.label)}
                         aria-expanded={isOpen}
                         aria-controls={`nav-group-${i}`}
-                        className={`display flex w-full items-center justify-between gap-4 py-4 text-left text-2xl transition-colors ${
-                          isActive(item.href) ? "text-saffron" : "text-paper"
+                        className={`display flex w-full items-center justify-between gap-4 py-4 text-left text-[1.75rem] transition-colors ${
+                          isActive(item.href) ? "text-saffron" : "text-white"
                         }`}
                       >
                         {item.label}
                         <Icon
                           name="chevron"
-                          size={16}
-                          className={`flex-none transition-transform duration-300 ${
-                            isOpen ? "rotate-90" : ""
+                          size={15}
+                          className={`flex-none rotate-90 opacity-60 transition-transform duration-300 ${
+                            isOpen ? "-rotate-90" : ""
                           }`}
                         />
                       </button>
 
                       <div id={`nav-group-${i}`} data-open={isOpen ? "true" : "false"} className="nav-drawer">
                         <div>
-                          <ul className="mb-4 space-y-0.5 border-l-2 border-navy-700 pl-4">
+                          <ul className="mb-4 border-l border-navy-750 pl-4">
                             {children.map((c) => (
                               <li key={c.href}>
                                 <Link
                                   href={c.href}
-                                  className="block py-2 text-[0.98rem] text-navy-200 transition-colors hover:text-saffron"
+                                  className="block py-2 text-[0.98rem] text-navy-100 transition-colors hover:text-saffron"
                                 >
                                   {c.label}
                                   {c.note ? (
-                                    <span className="chart-label mt-0.5 block text-[0.62rem] text-navy-300 opacity-70">
+                                    <span className="chart-label mt-0.5 block text-[0.62rem] text-navy-300">
                                       {c.note}
                                     </span>
                                   ) : null}
@@ -285,8 +362,8 @@ export function SiteHeader({
                     <Link
                       href={item.href}
                       aria-current={isActive(item.href) ? "page" : undefined}
-                      className={`display block py-4 text-2xl transition-colors ${
-                        isActive(item.href) ? "text-saffron" : "text-paper"
+                      className={`display block py-4 text-[1.75rem] transition-colors ${
+                        isActive(item.href) ? "text-saffron" : "text-white"
                       }`}
                     >
                       {item.label}
@@ -306,6 +383,16 @@ export function SiteHeader({
               style={{ "--i": nav.length } as React.CSSProperties}
             >
               Register{session ? ` for ${session}` : ""}
+            </a>
+          ) : null}
+
+          {primaryPhone ? (
+            <a
+              href={primaryPhone.href}
+              className="nav-entry btn btn-ghost tabular mt-3 w-full"
+              style={{ "--i": nav.length + 1 } as React.CSSProperties}
+            >
+              {primaryPhone.number}
             </a>
           ) : null}
         </nav>

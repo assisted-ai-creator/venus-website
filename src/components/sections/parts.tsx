@@ -50,7 +50,7 @@ const BTN_CLASS: Record<string, string> = {
   primary: "btn btn-primary",
   ghost: "btn btn-ghost",
   ink: "btn btn-ink",
-  link: "chart-label inline-flex items-center gap-2 underline underline-offset-2",
+  link: "btn-link",
 };
 
 export function Btn({ link, className = "" }: { link: SiteLink; className?: string }) {
@@ -79,7 +79,7 @@ export function Btn({ link, className = "" }: { link: SiteLink; className?: stri
 export function Buttons({ items, className = "" }: { items: SiteLink[]; className?: string }) {
   if (!items.length) return null;
   return (
-    <div className={`flex flex-wrap gap-3 ${className}`}>
+    <div className={`flex flex-wrap items-center gap-x-3.5 gap-y-4 ${className}`}>
       {items.map((l, i) => (
         <Btn key={`${l.href}-${i}`} link={l} />
       ))}
@@ -89,12 +89,18 @@ export function Buttons({ items, className = "" }: { items: SiteLink[]; classNam
 
 /* ----------------------------------------------------------------- type --- */
 
+/** The tracked label that names a section before its heading. */
+export function Eyebrow({ children, className = "" }: { children: ReactNode; className?: string }) {
+  if (!children) return null;
+  return <p className={`eyebrow ${className}`}>{children}</p>;
+}
+
 /**
  * A heading that keeps its scale whether it opens a page or sits mid-page.
  *
- * It no longer takes a tone: `.on-ground` resolves against whatever band or
- * plate it lands on, so the same heading sets correctly on white, on amber and
- * on blue without the caller having to know where it is.
+ * It takes no tone: `.on-ground` resolves against whatever band or plate it
+ * lands on, so the same heading sets correctly on white, on the wash and on
+ * navy without the caller having to know where it is.
  */
 export function SectionHeading({
   children,
@@ -105,7 +111,9 @@ export function SectionHeading({
 }) {
   if (!children) return null;
   return (
-    <h2 className={`display on-ground text-[clamp(1.9rem,4.5vw,3.1rem)] ${className}`}>
+    <h2
+      className={`display on-ground text-[clamp(1.85rem,3.4vw,2.85rem)] leading-[1.1] tracking-[-0.018em] ${className}`}
+    >
       {children}
     </h2>
   );
@@ -113,13 +121,17 @@ export function SectionHeading({
 
 export function Intro({
   children,
-  className = "mt-4",
+  className = "mt-5",
 }: {
   children: ReactNode;
   className?: string;
 }) {
   if (!children) return null;
-  return <p className={`prose-chart on-ground-soft ${className}`}>{children}</p>;
+  return (
+    <p className={`prose-chart text-[1.06rem] leading-[1.75] on-ground-soft ${className}`}>
+      {children}
+    </p>
+  );
 }
 
 /**

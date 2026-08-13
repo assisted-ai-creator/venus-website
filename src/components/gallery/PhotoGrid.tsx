@@ -6,8 +6,8 @@ import { Icon } from "@/components/chart/Icon";
 import { thumb } from "@/lib/img";
 
 /**
- * Specimen plates in a grid, each opening into a lightbox. The lightbox traps
- * focus, closes on Escape and on backdrop click, and moves with arrow keys.
+ * Photographs in a grid, each opening into a lightbox. The lightbox closes on
+ * Escape and on backdrop click, and moves with arrow keys.
  */
 export function PhotoGrid({ photos }: { photos: Photo[] }) {
   const [open, setOpen] = useState<number | null>(null);
@@ -39,15 +39,15 @@ export function PhotoGrid({ photos }: { photos: Photo[] }) {
 
   return (
     <>
-      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid gap-[clamp(1rem,2vw,1.625rem)] sm:grid-cols-2 lg:grid-cols-3">
         {photos.map((p, i) => (
           <li key={p.src}>
             <button
               type="button"
               onClick={() => setOpen(i)}
-              className="plate group block w-full overflow-hidden text-left"
+              className="group block w-full text-left on-ground transition-colors hover-accent"
             >
-              <span className="relative block aspect-[4/3] overflow-hidden bg-navy-100">
+              <span className="block overflow-hidden bg-image-bed">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={thumb(p.src)}
@@ -56,12 +56,14 @@ export function PhotoGrid({ photos }: { photos: Photo[] }) {
                   height={600}
                   loading={i < 3 ? "eager" : "lazy"}
                   decoding="async"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                  className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 />
               </span>
-              <span className="flex items-center justify-between gap-3 border-t-2 border-ink px-4 py-2.5">
-                <span className="chart-label truncate">{p.caption ?? "Photograph"}</span>
-                <span className="chart-label tabular flex-none opacity-70">
+              <span className="mt-3 flex items-baseline justify-between gap-4">
+                <span className="chart-label truncate on-ground-faint">
+                  {p.caption ?? "Photograph"}
+                </span>
+                <span className="chart-label tabular flex-none on-ground-faint">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </span>
@@ -75,11 +77,11 @@ export function PhotoGrid({ photos }: { photos: Photo[] }) {
           role="dialog"
           aria-modal="true"
           aria-label={current.caption ?? "Photograph"}
-          className="fixed inset-0 z-[60] flex flex-col bg-navy-950/95 p-3 sm:p-6"
+          className="on-ink fixed inset-0 z-[60] flex flex-col bg-navy-950/96 p-3 sm:p-6"
           onClick={close}
         >
           <div className="flex items-center justify-between gap-4">
-            <p className="chart-label tabular text-paper">
+            <p className="chart-label tabular text-white">
               {String((open ?? 0) + 1).padStart(2, "0")} /{" "}
               {String(photos.length).padStart(2, "0")}
             </p>
@@ -112,10 +114,10 @@ export function PhotoGrid({ photos }: { photos: Photo[] }) {
               <img
                 src={current.src}
                 alt={current.alt}
-                className="min-h-0 flex-1 border-2 border-paper object-contain"
+                className="min-h-0 flex-1 object-contain"
               />
               {current.caption ? (
-                <figcaption className="chart-label mt-3 text-center text-paper">
+                <figcaption className="chart-label mt-4 text-center text-navy-100">
                   {current.caption}
                 </figcaption>
               ) : null}
